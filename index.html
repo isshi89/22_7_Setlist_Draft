@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- タブに表示されるタイトル -->
+<title>22/7 セトリドラフト（非公式）</title>
+<meta name="description" content="22/7ファンによる非公式のセトリドラフトツールです。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+
+  <!-- ===== ページ見出し ===== -->
+  <h1><span>22/7</span> セトリドラフト</h1>
+  <p class="sub">ルーレットで出たEPの楽曲から選び、好きな枠に配置。一度置いたら変更できません。</p>
+
+  <!-- ===== ルーレット ===== -->
+  <section class="card roll">
+    <h2>ROULETTE</h2>
+    <div class="num" id="num">?</div>          <!-- 出た目（01〜16 / C） -->
+    <div class="epn" id="epn"></div>            <!-- 出たEPのタイトル -->
+    <div class="row"><button class="pri" id="spin">回す</button></div>
+    <div class="chips" id="chips"></div>        <!-- 1〜16・Cの一覧（出た目は打ち消し線） -->
+    <div class="msg" id="msg"></div>            <!-- ガイドメッセージ -->
+  </section>
+
+  <!-- ===== 曲の選択（ルーレット後だけ表示） ===== -->
+  <section class="card" id="songCard" hidden>
+    <h2>曲を選ぶ → 枠をタップして配置</h2>
+    <div class="songs" id="songs"></div>
+  </section>
+
+  <!-- ===== セットリスト ===== -->
+  <section class="card">
+    <h2>SETLIST</h2>
+    <input id="theme" type="text" maxlength="40" placeholder="テーマを自由に入力（例：夏曲、バラード）">
+    <div class="msg left" id="tprev"></div>     <!-- 出力タイトルのプレビュー -->
+    <div class="list" id="list"></div>          <!-- 枠はscript.jsが生成 -->
+    <div class="row">
+      <button id="img">画像で保存</button>
+      <button id="reset">リセット</button>
+    </div>
+  </section>
+
+  <!-- ===== 非公式の表記（文言はここで書き換え） ===== -->
+  <footer class="disclaimer">
+    <p>このサイトは22/7のファンが作成した非公式のツールです。22/7およびその運営・関係各社とは一切関係ありません。</p>
+    <p>グループ名・楽曲名などの権利は、それぞれの権利者に帰属します。</p>
+  </footer>
+
+</main>
+
+<!-- 読み込み順に注意：data.js（曲データ）→ script.js（動作） -->
+<script src="data.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

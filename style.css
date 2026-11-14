@@ -1,0 +1,133 @@
+/* =========================================================
+   22/7 セトリドラフト  スタイル
+   白ベース＋水色グラデの差し色
+   ========================================================= */
+
+/* ---------- 色の設定（ここを変えると全体の色が変わる） ---------- */
+:root {
+  --bg:   #ffffff;   /* 背景 */
+  --card: #f6fbfe;   /* カードの背景 */
+  --ink:  #1e2b36;   /* 文字色 */
+  --mute: #7b8b97;   /* 薄い文字色 */
+  --line: #dbeaf3;   /* 枠線 */
+  --g1:   #8fe3f2;   /* グラデの水色（明るい側） */
+  --g2:   #5aa6f0;   /* グラデの青（濃い側） */
+  --grad: linear-gradient(135deg, var(--g1), var(--g2));
+}
+
+/* ダークモード（端末の設定が暗いとき）。不要なら丸ごと削除してOK */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #0f1820; --card: #16232d; --ink: #e8f1f7; --mute: #8aa0b0; --line: #26394a;
+  }
+}
+
+/* ---------- 全体 ---------- */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Helvetica Neue", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  line-height: 1.5;
+}
+/* 画面上部のグラデの帯 */
+body::before {
+  content: "";
+  position: fixed; inset: 0 0 auto; height: 6px;
+  background: var(--grad);
+}
+main { max-width: 920px; margin: 0 auto; padding: 28px 16px 60px; }
+
+/* ---------- 見出し ---------- */
+h1 { font-size: 22px; letter-spacing: .08em; margin: 0 0 4px; font-weight: 700; }
+/* 「22/7」の文字をグラデにする */
+h1 span {
+  background: var(--grad);
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent;
+}
+h2 { font-size: 14px; margin: 0 0 10px; letter-spacing: .06em; }
+.sub { color: var(--mute); font-size: 13px; margin: 0 0 20px; }
+
+/* ---------- カード（各ブロック共通） ---------- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+/* ---------- ボタン・入力 ---------- */
+button {
+  font: inherit; cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--bg); color: var(--ink);
+  border-radius: 999px; padding: 8px 16px;
+}
+button:disabled { opacity: .4; cursor: not-allowed; }
+/* 「回す」ボタン（グラデ） */
+button.pri {
+  background: var(--grad); color: #fff;
+  border: 0; font-weight: 700; padding: 12px 32px; font-size: 16px;
+}
+input[type=text] {
+  width: 100%;
+  border: 1px solid var(--line); border-radius: 10px;
+  padding: 10px; background: var(--bg); color: var(--ink); font: inherit;
+}
+.row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 12px; }
+.msg { font-size: 13px; color: var(--mute); margin-top: 8px; text-align: center; min-height: 20px; }
+.msg.left { text-align: left; margin: 4px 0 12px; }
+
+/* ---------- ルーレット ---------- */
+.roll { text-align: center; }
+.num {
+  font-size: 64px; font-weight: 800; line-height: 1.1; min-height: 70px;
+  background: var(--grad);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.epn { color: var(--mute); font-size: 13px; min-height: 20px; }
+
+/* 1〜16・Cの一覧 */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; justify-content: center; }
+.chip {
+  min-width: 34px; text-align: center; padding: 4px 8px;
+  border-radius: 999px; border: 1px solid var(--line);
+  font-size: 13px; background: var(--bg);
+}
+.chip.used { background: var(--line); color: var(--mute); text-decoration: line-through; } /* 出た目 */
+.chip.now  { background: var(--grad); color: #fff; border: 0; font-weight: 700; }           /* 今出た目 */
+
+/* ---------- 曲の選択 ---------- */
+.songs { display: grid; gap: 6px; margin-top: 12px; }
+.song { text-align: left; border-radius: 10px; padding: 10px 12px; display: flex; gap: 10px; }
+.song b { color: var(--g2); min-width: 24px; }                      /* トラック番号 */
+.song.sel { background: var(--grad); color: #fff; border: 0; }       /* 選択中 */
+.song.sel b { color: #fff; }
+.song:disabled { text-decoration: line-through; }                    /* 配置済みの曲 */
+
+/* ---------- セットリストの枠 ---------- */
+.list { display: grid; gap: 6px; }
+.slot {
+  display: flex; align-items: center; gap: 10px;
+  border: 1px dashed var(--line); border-radius: 10px;
+  padding: 10px 12px; min-height: 46px; width: 100%;
+  background: var(--bg); text-align: left;
+}
+.slot .no { font-weight: 700; min-width: 36px; color: var(--g2); font-size: 13px; } /* M1, EN1 など */
+.slot.fill { border-style: solid; cursor: default; }                  /* 配置済み */
+.slot.hot  { border: 2px solid var(--g2); background: rgba(90,166,240,.1); } /* 配置できる空き枠 */
+.slot small { color: var(--mute); margin-left: auto; font-size: 11px; }       /* EPタイトル */
+/* MCの区切り線 */
+.mc {
+  text-align: center; font-size: 12px; letter-spacing: .3em; color: var(--mute);
+  padding: 2px 0;
+  background: linear-gradient(90deg, transparent, var(--line), transparent);
+}
+
+/* ---------- 非公式の表記 ---------- */
+.disclaimer { margin-top: 32px; color: var(--mute); font-size: 12px; text-align: center; }
+.disclaimer p { margin: 4px 0; }
