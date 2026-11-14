@@ -101,6 +101,10 @@ input[type=text] {
 .chip.used { background: var(--line); color: var(--mute); text-decoration: line-through; } /* 出た目 */
 .chip.now  { background: var(--grad); color: #fff; border: 0; font-weight: 700; }           /* 今出た目 */
 
+/* ---------- フォーマット選択 ---------- */
+.fmts { display: flex; flex-wrap: wrap; gap: 8px; }
+.fmt.on { background: var(--grad); color: #fff; border: 0; font-weight: 700; }   /* 選択中 */
+
 /* ---------- 曲の選択 ---------- */
 .songs { display: grid; gap: 6px; margin-top: 12px; }
 .song { text-align: left; border-radius: 10px; padding: 10px 12px; display: flex; gap: 10px; }
@@ -118,10 +122,13 @@ input[type=text] {
   background: var(--bg); text-align: left;
 }
 .slot .no { font-weight: 700; min-width: 36px; color: var(--g2); font-size: 13px; } /* M1, EN1 など */
+.slot .st { flex: 1; min-width: 0; }                                  /* 曲名 */
 .slot.fill { border-style: solid; cursor: default; }                  /* 配置済み */
-.slot.hot  { border: 2px solid var(--g2); background: rgba(90,166,240,.1); } /* 配置できる空き枠 */
+.slot.hot  { border: 2px solid var(--g2); background: rgba(90,166,240,.1); cursor: pointer; } /* 配置できる空き枠 */
 .slot small { color: var(--mute); margin-left: auto; font-size: 11px; }       /* EPタイトル */
-/* MCの区切り線 */
+/* ソロ枠のメンバー名入力欄 */
+.slot .solo-name { width: 130px; padding: 4px 8px; font-size: 13px; border-radius: 8px; }
+/* MC・幕間映像の区切り線 */
 .mc {
   text-align: center; font-size: 12px; letter-spacing: .3em; color: var(--mute);
   padding: 2px 0;

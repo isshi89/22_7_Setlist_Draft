@@ -15,6 +15,13 @@
   <h1><span>22/7</span> セトリドラフト</h1>
   <p class="sub">ルーレットで出たEPの楽曲から選び、好きな枠に配置。一度置いたら変更できません。</p>
 
+  <!-- ===== フォーマット選択（ドラフト開始後は変更不可） ===== -->
+  <section class="card">
+    <h2>FORMAT</h2>
+    <div class="fmts" id="fmts"></div>          <!-- ボタンはscript.jsが生成（内容は formats.js） -->
+    <div class="msg left" id="fdesc"></div>     <!-- 全○曲の表示 -->
+  </section>
+
   <!-- ===== ルーレット ===== -->
   <section class="card roll">
     <h2>ROULETTE</h2>
@@ -51,8 +58,9 @@
 
 </main>
 
-<!-- 読み込み順に注意：data.js（曲データ）→ script.js（動作） -->
+<!-- 読み込み順に注意：data.js（曲データ）→ formats.js（フォーマット）→ script.js（動作） -->
 <script src="data.js"></script>
+<script src="formats.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

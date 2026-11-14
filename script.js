@@ -20,21 +20,40 @@
 // ルーレットの目：data.js に書いたEP番号をそのまま使う（並び順も同じ）
 const KEYS = EPS.map(e => e[0]);
 
-// セットリストのテンプレート
-//   ["s", "枠ID"] = 曲の枠 / ["mc"] = MCの区切り
-//   枠IDが "EN" で始まるとアンコール表記、それ以外は「M＋枠ID」で表示
-//   → 曲数やMCの位置を変えたいときはここを編集
-const LAYOUT = [
-  ["s", "1"], ["s", "2"], ["s", "3"], ["s", "4"],
-  ["mc"],
-  ["s", "5"], ["s", "6"], ["s", "7"],
-  ["mc"],
-  ["s", "8"], ["s", "9"], ["s", "10"],
-  ["s", "EN1"], ["s", "EN2"],
-];
-const SLOT_IDS = LAYOUT.filter(x => x[0] === "s").map(x => x[1]);
+// セットリストの枠（選んだフォーマットから自動で作られる。フォーマットは formats.js で編集）
+//   ["s", "枠ID"]        = 曲の枠（枠IDが "EN" で始まるとアンコール、それ以外は「M＋枠ID」で表示）
+//   ["s", "枠ID", true]  = ソロ枠（メンバー名の入力欄つき）
+//   ["d", "表示名"]      = 区切り（MC または 幕間映像）
+let LAYOUT = [];
+let SLOT_IDS = [];
 
-const STORAGE_KEY = "s227v2";                 // 進行状況の保存キー（ブラウザのlocalStorage）
+// formats.js の spec 文字列を、枠の配列に変換する
+function buildLayout(spec, divider) {
+  const out = [];
+  let n = 0, en = 0;                              // 曲番号・アンコール番号のカウンタ
+  spec.split("/").forEach((seg, i) => {
+    if (i > 0) out.push(["d", divider]);          // "/" は区切り
+    (seg.match(/\d+S?|MC|EN\d+/g) || []).forEach(tok => {
+      if (tok === "MC") out.push(["d", "MC"]);                                    // 区切りの中のMC
+      else if (tok.startsWith("EN")) for (let j = 0; j < +tok.slice(2); j++) out.push(["s", "EN" + (++en)]);
+      else if (tok.endsWith("S")) out.push(["s", String(++n), true]);             // ソロ枠
+      else for (let j = 0; j < parseInt(tok, 10); j++) out.push(["s", String(++n)]); // 通常の曲枠
+    });
+  });
+  return out;
+}
+
+const currentFormat = () => FORMATS.find(f => f.id === S.format) || FORMATS[0];
+
+// 選択中のフォーマットを LAYOUT / SLOT_IDS に反映する
+function applyFormat() {
+  const f = currentFormat();
+  S.format = f.id;
+  LAYOUT = buildLayout(f.spec, f.divider);
+  SLOT_IDS = LAYOUT.filter(x => x[0] === "s").map(x => x[1]);
+}
+
+const STORAGE_KEY = "s227v3";                 // 進行状況の保存キー（ブラウザのlocalStorage）
 const SITE_TITLE = "22/7セトリドラフト";     // 画像のタイトルのベース
 const SPIN_FRAMES = 22;                     // ルーレットの切り替え回数
 const SPIN_INTERVAL = 70;                   // 切り替え間隔（ミリ秒）。大きいほどゆっくり
@@ -49,6 +68,8 @@ const ROWS = EPS.flatMap(([k, ep, songs]) =>
    2. 状態
    --------------------------------------------------------- */
 const S = {
+  format: FORMATS[0].id, // 選んだフォーマットのid（formats.js）
+  solo: "",       // ソロ枠のメンバー名
   theme: "",      // 入力されたテーマ
   drawn: [],      // 出た目（再び出ないように記録）
   cur: null,      // 今回出た目
@@ -107,6 +128,13 @@ function render() {
   $("theme").value = S.theme || "";
   $("tprev").textContent = "出力タイトル：" + title();
 
+  // フォーマット選択（ドラフトが始まったら固定。変えるにはリセット）
+  const started = S.drawn.length > 0 || Object.keys(S.slots).length > 0;
+  $("fmts").innerHTML = FORMATS.map(f =>
+    `<button class="fmt ${f.id === S.format ? "on" : ""}" data-f="${f.id}" ${started ? "disabled" : ""}>${esc(f.name)}</button>`
+  ).join("");
+  $("fdesc").textContent = `全${SLOT_IDS.length}曲` + (started ? "　（フォーマットを変えるにはリセットしてください）" : "");
+
   // 1〜16・Cの一覧
   $("chips").innerHTML = KEYS.map(k =>
     `<span class="chip ${S.drawn.includes(k) ? "used" : ""} ${S.cur === k ? "now" : ""}">${keyLabel(k)}</span>`
@@ -132,16 +160,19 @@ function render() {
     ).join("") || "<div class='msg'>このEPの曲データがありません</div>";
   }
 
-  // セットリスト（配置済み／空き枠／MC）
+  // セットリスト（配置済み／空き枠／区切り）
   $("list").innerHTML = LAYOUT.map(x => {
-    if (x[0] === "mc") return `<div class="mc">MC</div>`;
+    if (x[0] === "d") return `<div class="mc">${esc(x[1])}</div>`;            // MC・幕間映像
     const id = x[1], s = S.slots[id], lab = slotLabel(id);
+    // ソロ枠だけ、メンバー名の入力欄をつける
+    const solo = x[2]
+      ? `<input class="solo-name" type="text" maxlength="20" placeholder="ソロ：メンバー名" value="${esc(S.solo)}">` : "";
     if (s) {
-      return `<div class="slot fill"><span class="no">${lab}</span>${esc(s.t)}<small>${esc(s.ep)}</small></div>`;
+      return `<div class="slot fill"><span class="no">${lab}</span>${solo}<span class="st">${esc(s.t)}</span><small>${esc(s.ep)}</small></div>`;
     }
     const hot = S.pending && S.sel;   // 曲を選択中なら空き枠を強調して押せるようにする
-    return `<button class="slot ${hot ? "hot" : ""}" data-i="${id}" ${hot ? "" : "disabled"}>` +
-           `<span class="no">${lab}</span><span style="color:var(--mute)">—</span></button>`;
+    return `<div class="slot ${hot ? "hot" : ""}" data-i="${id}">` +
+           `<span class="no">${lab}</span>${solo}<span class="st" style="color:var(--mute)">—</span></div>`;
   }).join("");
 
   save();
@@ -181,6 +212,7 @@ $("songs").onclick = e => {
 
 // 空き枠をタップ → 選択中の曲を配置（配置後は変更不可）
 $("list").onclick = e => {
+  if (e.target.closest("input")) return;   // ソロ名の入力欄は配置の操作に含めない
   const b = e.target.closest(".slot");
   if (!b || !b.dataset.i || !S.sel || !S.pending) return;
   const r = ROWS.find(x => x.k === S.cur && x.t === S.sel);
@@ -197,6 +229,20 @@ $("theme").oninput = e => {
   save();
 };
 
+// ソロ枠のメンバー名：入力のたびに保存（render()は呼ばない＝入力中にカーソルが飛ばない）
+$("list").oninput = e => {
+  if (e.target.classList.contains("solo-name")) { S.solo = e.target.value; save(); }
+};
+
+// フォーマット選択：ドラフト開始前だけ変更できる
+$("fmts").onclick = e => {
+  const b = e.target.closest(".fmt");
+  if (!b || b.disabled) return;
+  S.format = b.dataset.f;
+  applyFormat();
+  render();
+};
+
 // リセット：誤操作防止のため2回押しで実行（途中でも、いつでもOK）
 let resetTimer = null;
 $("reset").onclick = () => {
@@ -208,7 +254,7 @@ $("reset").onclick = () => {
   }
   // 2回目：実行（テーマは残す）
   clearTimeout(resetTimer); resetTimer = null; btn.textContent = "リセット";
-  S.drawn = []; S.cur = null; S.slots = {}; S.sel = null; S.pending = false; S.skipped = false;
+  S.drawn = []; S.cur = null; S.slots = {}; S.sel = null; S.pending = false; S.skipped = false; S.solo = "";
   render();
 };
 
@@ -249,7 +295,7 @@ function makeImage() {
   const C = { blue: "#5aa6f0", light: "#8fe3f2", ink: "#1e2b36", mute: "#7b8b97",
               card: "#f6fbfe", line: "#dbeaf3", empty: "#b8c6d0" };
 
-  const H = TOP + LAYOUT.reduce((a, x) => a + (x[0] === "mc" ? MC_H : ROW_H), 0) + 60;
+  const H = TOP + LAYOUT.reduce((a, x) => a + (x[0] === "d" ? MC_H : ROW_H), 0) + 60;
   const c = document.createElement("canvas");
   c.width = W; c.height = H;
   const g = c.getContext("2d");
@@ -263,16 +309,19 @@ function makeImage() {
   // 見出し
   g.textBaseline = "middle"; g.textAlign = "left";
   g.fillStyle = grad; g.font = `700 28px ${FONT}`; g.fillText("22/7", PAD, 62);
+  g.fillStyle = C.mute; g.font = `600 22px ${FONT}`; g.fillText(currentFormat().name, PAD + 90, 64);   // フォーマット名
   g.fillStyle = C.ink; fit(g, title(), 44, W - PAD * 2, FONT, "700"); g.fillText(title(), PAD, 112);
 
   // セットリスト本体
   let y = TOP;
   LAYOUT.forEach(x => {
-    if (x[0] === "mc") {   // MC：線の中央に「MC」
+    if (x[0] === "d") {   // 区切り：線の中央にラベル（MC・幕間映像）
+      g.font = `600 20px ${FONT}`;
+      const tw = g.measureText(x[1]).width + 40;
       g.fillStyle = grad; g.fillRect(PAD, y + MC_H / 2 - 1, W - PAD * 2, 2);
-      g.fillStyle = "#fff"; g.fillRect(W / 2 - 44, y + 6, 88, MC_H - 12);
-      g.fillStyle = C.mute; g.font = `600 20px ${FONT}`; g.textAlign = "center";
-      g.fillText("MC", W / 2, y + MC_H / 2); g.textAlign = "left";
+      g.fillStyle = "#fff"; g.fillRect(W / 2 - tw / 2, y + 6, tw, MC_H - 12);
+      g.fillStyle = C.mute; g.textAlign = "center";
+      g.fillText(x[1], W / 2, y + MC_H / 2); g.textAlign = "left";
       y += MC_H; return;
     }
     const id = x[1], s = S.slots[id];
@@ -280,7 +329,14 @@ function makeImage() {
     roundRect(g, PAD, y + 4, W - PAD * 2, ROW_H - 8, 14);
     g.fillStyle = C.card; g.fill(); g.strokeStyle = C.line; g.lineWidth = 2; g.stroke();
     // 枠ラベル（M1, EN1...）
-    g.fillStyle = C.blue; g.font = `700 24px ${FONT}`; g.fillText(slotLabel(id), PAD + 24, y + ROW_H / 2);
+    g.fillStyle = C.blue; g.font = `700 24px ${FONT}`;
+    if (x[2]) {   // ソロ枠：枠ラベルの下にメンバー名
+      g.fillText(slotLabel(id), PAD + 24, y + ROW_H / 2 - 12);
+      const tag = "ソロ " + (S.solo || "");
+      fit(g, tag, 16, 84, FONT, "600"); g.fillText(tag, PAD + 24, y + ROW_H / 2 + 14);
+    } else {
+      g.fillText(slotLabel(id), PAD + 24, y + ROW_H / 2);
+    }
     if (s) {   // 曲名とEPタイトル
       g.fillStyle = C.ink; fit(g, s.t, 30, W - PAD * 2 - 150, FONT, "600");
       g.fillText(s.t, PAD + 110, y + ROW_H / 2 - 9);
@@ -313,5 +369,6 @@ $("img").onclick = async () => {
 /* ---------------------------------------------------------
    7. 起動
    --------------------------------------------------------- */
-restore();   // 前回の続きを復元
+restore();       // 前回の続きを復元
+applyFormat();   // 選択中のフォーマットから枠を作る
 render();    // 画面を描画
