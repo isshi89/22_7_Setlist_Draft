@@ -17,8 +17,8 @@
    1. 設定
    --------------------------------------------------------- */
 
-// ルーレットの目：1〜16 と C（キャラソン）
-const KEYS = [...Array.from({ length: 16 }, (_, i) => String(i + 1)), "C"];
+// ルーレットの目：data.js に書いたEP番号をそのまま使う（並び順も同じ）
+const KEYS = EPS.map(e => e[0]);
 
 // セットリストのテンプレート
 //   ["s", "枠ID"] = 曲の枠 / ["mc"] = MCの区切り
@@ -34,7 +34,7 @@ const LAYOUT = [
 ];
 const SLOT_IDS = LAYOUT.filter(x => x[0] === "s").map(x => x[1]);
 
-const STORAGE_KEY = "s227";                 // 進行状況の保存キー（ブラウザのlocalStorage）
+const STORAGE_KEY = "s227v2";                 // 進行状況の保存キー（ブラウザのlocalStorage）
 const SITE_TITLE = "22/7セトリドラフト";     // 画像のタイトルのベース
 const SPIN_FRAMES = 22;                     // ルーレットの切り替え回数
 const SPIN_INTERVAL = 70;                   // 切り替え間隔（ミリ秒）。大きいほどゆっくり
@@ -42,7 +42,7 @@ const RESET_CONFIRM_MS = 3000;              // リセット確認の受付時間
 
 // 曲データ（data.js）を「1曲=1行」の配列に変換：{ k:EP番号, ep:EPタイトル, tr:トラック番号, t:曲名 }
 const ROWS = EPS.flatMap(([k, ep, songs]) =>
-  songs.map((t, i) => ({ k, ep, tr: i + 1, t }))
+  songs.map((t, i) => ({ k, ep: ep || keyLabel(k), tr: i + 1, t }))
 );
 
 /* ---------------------------------------------------------
@@ -55,6 +55,7 @@ const S = {
   slots: {},      // 配置済みの曲  例：{ "1": { k, ep, t }, "EN1": {...} }
   sel: null,      // 選択中の曲名
   pending: false, // true = 目が出たが、まだ曲を配置していない
+  skipped: false, // true = 出たEPの曲がすべて配置済みで、この目は使えなかった
 };
 
 // 進行状況をブラウザに保存・復元（失敗しても動くようtry/catchで囲む）
@@ -77,8 +78,8 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-// 目の表示：1→"01"、C→"C"
-const keyLabel = k => (k === "C" ? "C" : String(k).padStart(2, "0"));
+// 目の表示：数字は2桁（1→"01"）、それ以外はそのまま（"C"、"A1"、"3rd"）
+function keyLabel(k) { return /^\d+$/.test(k) ? String(k).padStart(2, "0") : k; }
 
 // 枠の表示名："1"→"M1"、"EN1"→"EN1"
 const slotLabel = id => (id.startsWith("EN") ? id : "M" + id);
@@ -91,6 +92,9 @@ function title() {
 
 // すでに配置された曲名の一覧（同じ曲を2回置けないようにするため）
 const placedTitles = () => Object.values(S.slots).map(s => s.t);
+
+// そのEPに、まだ配置できる曲が残っているか
+const hasAvailable = k => ROWS.some(r => r.k === k && !placedTitles().includes(r.t));
 
 /* ---------------------------------------------------------
    4. 描画
@@ -115,7 +119,8 @@ function render() {
 
   // ガイドメッセージ
   $("msg").textContent = full ? "セットリスト完成！"
-    : S.pending ? "曲を選んで、枠に配置してください" : "";
+    : S.pending ? "曲を選んで、枠に配置してください"
+    : S.skipped ? "このEPの曲はすべて配置済みのため、この目は使えませんでした" : "";
 
   // 曲の選択（配置待ちのときだけ表示）
   $("songCard").hidden = !S.pending;
@@ -160,7 +165,7 @@ $("spin").onclick = () => {
     if (++n > SPIN_FRAMES) {
       clearInterval(timer);
       S.cur = pick; S.drawn.push(pick);
-      S.pending = true; S.sel = null;
+      S.pending = hasAvailable(pick); S.skipped = !S.pending; S.sel = null;
       render();
     }
   }, SPIN_INTERVAL);
@@ -203,7 +208,7 @@ $("reset").onclick = () => {
   }
   // 2回目：実行（テーマは残す）
   clearTimeout(resetTimer); resetTimer = null; btn.textContent = "リセット";
-  S.drawn = []; S.cur = null; S.slots = {}; S.sel = null; S.pending = false;
+  S.drawn = []; S.cur = null; S.slots = {}; S.sel = null; S.pending = false; S.skipped = false;
   render();
 };
 
