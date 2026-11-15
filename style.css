@@ -198,15 +198,18 @@ input:disabled { opacity: .5; }
   border: 1px dashed var(--line); border-radius: 10px;
   padding: 10px 12px; min-height: 46px; width: 100%;
   background: var(--bg); text-align: left;
+  flex-wrap: wrap;   /* ソロ枠など中身が多いときは折り返す */
 }
 .slot .no { font-weight: 700; min-width: 36px; color: var(--g2); font-size: 13px; } /* M1, EN1 など */
-.slot .st { flex: 1; min-width: 0; }                                  /* 曲名 */
+.slot .st { flex: 1 1 120px; min-width: 120px; }                      /* 曲名（狭い画面では次の行に折り返す） */
 .slot.fill { border-style: solid; cursor: default; }                  /* 配置済み */
 .slot.hot  { border: 2px solid var(--g2); background: rgba(90,166,240,.1); cursor: pointer; } /* 配置できる空き枠 */
 .slot small { color: var(--mute); margin-left: auto; font-size: 11px; }       /* EPタイトル */
-/* ソロ枠のメンバー選択（プルダウン） */
+/* ソロ枠のメンバー選択（‹ プルダウン ›） */
+.stepper { display: inline-flex; align-items: center; gap: 4px; }
+.step { width: 28px; height: 30px; padding: 0; border-radius: 8px; font-size: 18px; line-height: 1; }
 .slot .solo-name {
-  width: 120px; padding: 4px 8px; font: inherit; font-size: 13px;
+  width: 112px; padding: 4px 6px; font: inherit; font-size: 13px;
   border: 1px solid var(--line); border-radius: 8px;
   background: var(--bg); color: var(--ink);
 }
@@ -217,7 +220,7 @@ input:disabled { opacity: .5; }
   background: linear-gradient(90deg, transparent, var(--line), transparent);
 }
 @media (min-width: 600px) {
-  .slot .solo-name { width: 140px; }
+  .slot .solo-name { width: 130px; }
 }
 
 /* ---------- 8. 非公式の表記・リセットボタン ---------- */

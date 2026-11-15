@@ -193,11 +193,13 @@ function render() {
   $("list").innerHTML = LAYOUT.map(x => {
     if (x[0] === "d") return `<div class="mc">${esc(x[1])}</div>`;            // MC・幕間映像
     const id = x[1], s = S.slots[id], lab = slotLabel(id);
-    // ソロ枠だけ、メンバーを選ぶプルダウン（data.js の MEMBERS）をつける
+    // ソロ枠だけ、メンバーを選ぶ部品（data.js の MEMBERS を五十音順に表示）
+    //   ‹ › で前後のメンバーに切り替え、真ん中をタップするとプルダウンで選べる
     const solo = x[2]
-      ? `<select class="solo-name"><option value="">メンバーを選択</option>` +
+      ? `<span class="stepper"><button type="button" class="step" data-d="-1" aria-label="前のメンバー">‹</button>` +
+        `<select class="solo-name"><option value="">メンバーを選択</option>` +
         MEMBERS.map(m => `<option value="${esc(m)}" ${m === S.solo ? "selected" : ""}>${esc(m)}</option>`).join("") +
-        `</select>` : "";
+        `</select><button type="button" class="step" data-d="1" aria-label="次のメンバー">›</button></span>` : "";
     if (s) {
       return `<div class="slot fill"><span class="no">${lab}</span>${solo}<span class="st">${esc(s.t)}</span><small>${esc(s.ep)}</small></div>`;
     }
@@ -244,6 +246,15 @@ $("songs").onclick = e => {
 
 // 空き枠をタップ → 選択中の曲を配置（配置後は変更不可）
 $("list").onclick = e => {
+  // ソロのメンバー選択の ‹ ›：選択肢を1つずつ切り替える（先頭と末尾はつながる）
+  const stepBtn = e.target.closest(".step");
+  if (stepBtn) {
+    const sel = stepBtn.closest(".stepper").querySelector("select");
+    const n = sel.options.length;
+    sel.selectedIndex = (sel.selectedIndex + parseInt(stepBtn.dataset.d, 10) + n) % n;
+    S.solo = sel.value; save();
+    return;
+  }
   if (e.target.closest("input, select")) return;   // ソロのメンバー選択は配置の操作に含めない
   const b = e.target.closest(".slot");
   if (!b || !b.dataset.i || !S.sel || !S.pending) return;
