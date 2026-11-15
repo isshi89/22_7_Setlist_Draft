@@ -15,64 +15,85 @@
   <h1><span>22/7</span> セトリドラフト</h1>
   <p class="sub">ルーレットで出たEPの楽曲から選び、好きな枠に配置。一度置いたら変更できません。</p>
 
-  <!-- ===== ルーレット（スクロールしても画面上部に追従する） ===== -->
-  <section class="card roll">
-    <div class="num" id="num">?</div>            <!-- 出た目（01〜17 / C / A1 など） -->
-    <div class="roll-mid">
-      <div class="epn" id="epn"></div>           <!-- 出たEPのタイトル -->
-      <div class="msg" id="msg"></div>           <!-- ガイドメッセージ -->
+  <!-- 画面の並び：
+       スマホ・タブレット … 上から「操作パネル（追従）」→「設定とセットリスト」
+       PC                … 左に「操作パネル（追従）」／右に「設定とセットリスト」 -->
+  <div class="layout">
+
+    <!-- ===== 操作パネル：ルーレット・出た目・曲の選択（スクロールしても画面に追従） ===== -->
+    <aside class="card panel">
+
+      <!-- ルーレット -->
+      <div class="roll">
+        <div class="num" id="num">?</div>            <!-- 出た目（01〜17 / C / A1 など） -->
+        <div class="roll-mid">
+          <div class="epn" id="epn"></div>           <!-- 出たEPのタイトル -->
+          <div class="msg" id="msg"></div>           <!-- ガイドメッセージ -->
+        </div>
+        <button class="pri" id="spin">回す</button>
+      </div>
+
+      <!-- 出た目の一覧 -->
+      <div class="panel-sec">
+        <h2 class="hd">出た目</h2>                   <!-- スマホでは見出しを隠す -->
+        <div class="chips" id="chips"></div>         <!-- 出た目は打ち消し線（重複が残っている間は引かない） -->
+      </div>
+
+      <!-- 曲の選択（ルーレットの後だけ表示） -->
+      <div class="panel-sec" id="songCard" hidden>
+        <h2>曲を選ぶ → 枠をタップして配置</h2>
+        <div class="songs" id="songs"></div>
+        <div class="row"><button id="pass">パス</button></div>   <!-- 回数はオプションで設定 -->
+      </div>
+
+    </aside>
+
+    <!-- ===== 右側（スマホ・タブレットでは下）：設定とセットリスト ===== -->
+    <div class="main-col">
+
+      <!-- 設定（タブレット・PCでは2列で並ぶ） -->
+      <div class="settings">
+
+        <!-- フォーマット選択（ドラフト開始後は変更不可） -->
+        <section class="card">
+          <h2>FORMAT</h2>
+          <div class="fmts" id="fmts"></div>          <!-- ボタンはscript.jsが生成（内容は formats.js） -->
+          <div class="msg left" id="fdesc"></div>     <!-- 全○曲の表示 -->
+        </section>
+
+        <!-- オプション（ドラフト開始前に回数を設定） -->
+        <section class="card">
+          <h2>OPTION</h2>
+          <div class="opts">
+            <div class="opt"><span>パス回数</span>
+              <label class="unl"><input type="checkbox" id="optPassInf"> 無制限</label>
+              <input type="number" id="optPass" min="0" max="99" value="0"></div>
+            <div class="opt"><span>EPの重複回数</span>
+              <label class="unl"><input type="checkbox" id="optDupInf"> 無制限</label>
+              <input type="number" id="optDup" min="0" max="99" value="0"></div>
+          </div>
+          <div class="msg left" id="odesc"></div>     <!-- 残り回数の表示 -->
+          <div class="note">
+            パス：出たEPから曲を置かずに見送れる回数（その目は使用済みのまま）／
+            EPの重複：すでに出たEPがもう一度出てよい回数（同じ曲は置けません）。0〜99の数字で指定します（0で無効）。「無制限」にチェックすると回数の制限がなくなります。重複が残っている間は、出た番号に横線を引きません。
+          </div>
+        </section>
+
+      </div>
+
+      <!-- セットリスト -->
+      <section class="card">
+        <h2>SETLIST</h2>
+        <input id="theme" type="text" maxlength="40" placeholder="テーマを自由に入力（例：夏曲、バラード）">
+        <div class="msg left" id="tprev"></div>     <!-- 出力タイトルのプレビュー -->
+        <div class="list" id="list"></div>          <!-- 枠はscript.jsが生成 -->
+        <div class="row">
+          <button id="img">画像で保存</button>
+        </div>
+      </section>
+
     </div>
-    <button class="pri" id="spin">回す</button>
-  </section>
-
-  <!-- ===== 出た目の一覧 ===== -->
-  <section class="card">
-    <h2>出た目</h2>
-    <div class="chips" id="chips"></div>         <!-- 出た目は打ち消し線（重複が残っている間は引かない） -->
-  </section>
-
-  <!-- ===== フォーマット選択（ドラフト開始後は変更不可） ===== -->
-  <section class="card">
-    <h2>FORMAT</h2>
-    <div class="fmts" id="fmts"></div>          <!-- ボタンはscript.jsが生成（内容は formats.js） -->
-    <div class="msg left" id="fdesc"></div>     <!-- 全○曲の表示 -->
-  </section>
-
-  <!-- ===== オプション（ドラフト開始前に回数を設定） ===== -->
-  <section class="card">
-    <h2>OPTION</h2>
-    <div class="opts">
-      <div class="opt"><span>パス回数</span>
-        <label class="unl"><input type="checkbox" id="optPassInf"> 無制限</label>
-        <input type="number" id="optPass" min="0" max="99" value="0"></div>
-      <div class="opt"><span>EPの重複回数</span>
-        <label class="unl"><input type="checkbox" id="optDupInf"> 無制限</label>
-        <input type="number" id="optDup" min="0" max="99" value="0"></div>
-    </div>
-    <div class="msg left" id="odesc"></div>     <!-- 残り回数の表示 -->
-    <div class="note">
-      パス：出たEPから曲を置かずに見送れる回数（その目は使用済みのまま）／
-      EPの重複：すでに出たEPがもう一度出てよい回数（同じ曲は置けません）。0〜99の数字で指定します（0で無効）。「無制限」にチェックすると回数の制限がなくなります。重複が残っている間は、出た番号に横線を引きません。
-    </div>
-  </section>
-
-  <!-- ===== 曲の選択（ルーレット後だけ表示） ===== -->
-  <section class="card" id="songCard" hidden>
-    <h2>曲を選ぶ → 枠をタップして配置</h2>
-    <div class="songs" id="songs"></div>
-    <div class="row"><button id="pass">パス</button></div>   <!-- 回数はオプションで設定 -->
-  </section>
-
-  <!-- ===== セットリスト ===== -->
-  <section class="card">
-    <h2>SETLIST</h2>
-    <input id="theme" type="text" maxlength="40" placeholder="テーマを自由に入力（例：夏曲、バラード）">
-    <div class="msg left" id="tprev"></div>     <!-- 出力タイトルのプレビュー -->
-    <div class="list" id="list"></div>          <!-- 枠はscript.jsが生成 -->
-    <div class="row">
-      <button id="img">画像で保存</button>
-    </div>
-  </section>
+  </div>
 
   <!-- ===== 非公式の表記（文言はここで書き換え） ===== -->
   <footer class="disclaimer">

@@ -1,9 +1,24 @@
 /* =========================================================
    22/7 セトリドラフト  スタイル
    白ベース＋水色グラデの差し色
+
+   目次
+     1. 色の設定
+     2. 全体・見出し
+     3. 部品（カード・ボタン・入力）
+     4. レイアウト（スマホ → タブレット → PC の順に上書き）
+     5. 操作パネル（ルーレット・出た目・曲の選択）
+     6. 設定（フォーマット・オプション）
+     7. セットリスト
+     8. 非公式の表記・リセットボタン
+
+   画面幅の切り替え（ブレークポイント）
+     スマホ   … 〜599px（基本のスタイル）
+     タブレット … 600px〜 （@media (min-width: 600px)）
+     PC        … 1024px〜（@media (min-width: 1024px)）
    ========================================================= */
 
-/* ---------- 色の設定（ここを変えると全体の色が変わる） ---------- */
+/* ---------- 1. 色の設定（ここを変えると全体の色が変わる） ---------- */
 :root {
   --bg:   #ffffff;   /* 背景 */
   --card: #f6fbfe;   /* カードの背景 */
@@ -23,7 +38,7 @@
   }
 }
 
-/* ---------- 全体 ---------- */
+/* ---------- 2. 全体・見出し ---------- */
 * { box-sizing: border-box; }
 body {
   margin: 0;
@@ -37,11 +52,11 @@ body::before {
   content: "";
   position: fixed; inset: 0 0 auto; height: 6px;
   background: var(--grad);
+  z-index: 40;
 }
-main { max-width: 920px; margin: 0 auto; padding: 28px 16px 100px; }   /* 下の余白は右下ボタンと重ならないように広め */
+main { max-width: 1120px; margin: 0 auto; padding: 20px 12px 100px; }  /* 下の余白は右下ボタンと重ならないため */
 
-/* ---------- 見出し ---------- */
-h1 { font-size: 22px; letter-spacing: .08em; margin: 0 0 4px; font-weight: 700; }
+h1 { font-size: 20px; letter-spacing: .08em; margin: 0 0 4px; font-weight: 700; }
 /* 「22/7」の文字をグラデにする */
 h1 span {
   background: var(--grad);
@@ -49,18 +64,17 @@ h1 span {
   color: transparent;
 }
 h2 { font-size: 14px; margin: 0 0 10px; letter-spacing: .06em; }
-.sub { color: var(--mute); font-size: 13px; margin: 0 0 20px; }
+.sub { color: var(--mute); font-size: 12px; margin: 0 0 14px; }
 
-/* ---------- カード（各ブロック共通） ---------- */
+/* ---------- 3. 部品 ---------- */
+/* カード（各ブロック共通） */
 .card {
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 16px;
+  padding: 14px;
 }
 
-/* ---------- ボタン・入力 ---------- */
 button {
   font: inherit; cursor: pointer;
   border: 1px solid var(--line);
@@ -71,72 +85,113 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 /* 「回す」ボタン（グラデ） */
 button.pri {
   background: var(--grad); color: #fff;
-  border: 0; font-weight: 700; padding: 12px 32px; font-size: 16px;
+  border: 0; font-weight: 700; padding: 10px 22px; font-size: 15px;
 }
 input[type=text] {
   width: 100%;
   border: 1px solid var(--line); border-radius: 10px;
   padding: 10px; background: var(--bg); color: var(--ink); font: inherit;
 }
-.row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 12px; }
-.msg { font-size: 13px; color: var(--mute); margin-top: 8px; text-align: center; min-height: 20px; }
-.msg.left { text-align: left; margin: 4px 0 12px; }
-
-/* ---------- ルーレット ---------- */
-/* 画面上部に追従するルーレット（左：出た目／中：EPタイトルとメッセージ／右：回すボタン） */
-.roll {
-  position: sticky; top: 14px; z-index: 20;
-  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px;
-  padding: 10px 16px; text-align: left;
-  box-shadow: 0 4px 14px rgba(90,166,240,.18);
-}
-.roll .num { font-size: 44px; min-height: 0; min-width: 64px; text-align: center; }
-.roll-mid { min-width: 0; }
-.roll .epn { min-height: 0; color: var(--ink); font-size: 14px; font-weight: 600; }
-.roll .msg { margin-top: 2px; min-height: 0; text-align: left; font-size: 12px; }
-.roll button.pri { padding: 10px 22px; font-size: 15px; }
-.num {
-  font-size: 64px; font-weight: 800; line-height: 1.1; min-height: 70px;
-  background: var(--grad);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-}
-.epn { color: var(--mute); font-size: 13px; min-height: 20px; }
-
-/* 1〜16・Cの一覧 */
-.chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
-.chip {
-  min-width: 34px; text-align: center; padding: 4px 8px;
-  border-radius: 999px; border: 1px solid var(--line);
-  font-size: 13px; background: var(--bg);
-}
-.chip.used { background: var(--line); color: var(--mute); text-decoration: line-through; } /* 出た目 */
-.chip.now  { background: var(--grad); color: #fff; border: 0; font-weight: 700; }           /* 今出た目 */
-
-/* ---------- フォーマット選択 ---------- */
-.fmts { display: flex; flex-wrap: wrap; gap: 8px; }
-.fmt.on { background: var(--grad); color: #fff; border: 0; font-weight: 700; }   /* 選択中 */
-
-/* ---------- オプション ---------- */
-.opts { display: flex; flex-wrap: wrap; gap: 20px; }
-.opt { display: flex; align-items: center; gap: 8px; font-size: 14px; }
-.opt .unl { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--mute); }
 input[type=number] {
   width: 72px; padding: 8px; font: inherit;
   border: 1px solid var(--line); border-radius: 10px;
   background: var(--bg); color: var(--ink);
 }
 input:disabled { opacity: .5; }
+
+.row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 12px; }
+.msg { font-size: 13px; color: var(--mute); margin-top: 8px; text-align: center; min-height: 20px; }
+.msg.left { text-align: left; margin: 4px 0 12px; }
 .note { font-size: 12px; color: var(--mute); margin-top: 6px; }
 
-/* ---------- 曲の選択 ---------- */
-.songs { display: grid; gap: 6px; margin-top: 12px; }
-.song { text-align: left; border-radius: 10px; padding: 10px 12px; display: flex; gap: 10px; }
+/* ---------- 4. レイアウト ---------- */
+/* スマホ：1列（上から 操作パネル → 設定とセットリスト） */
+.layout   { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+.main-col { display: grid; gap: 12px; min-width: 0; }
+.settings { display: grid; gap: 12px; }
+
+/* タブレット：設定（フォーマット・オプション）を2列に */
+@media (min-width: 600px) {
+  main { padding: 28px 16px 100px; }
+  h1 { font-size: 22px; }
+  .sub { font-size: 13px; margin-bottom: 20px; }
+  .card { padding: 16px; }
+  .settings { grid-template-columns: 1fr 1fr; }
+}
+
+/* PC：左に操作パネル（追従）、右に設定とセットリスト */
+@media (min-width: 1024px) {
+  h1 { font-size: 24px; }
+  .layout { grid-template-columns: 380px minmax(0, 1fr); gap: 20px; align-items: start; }
+  .main-col { gap: 16px; }
+}
+
+/* ---------- 5. 操作パネル（スクロールしても画面に追従） ---------- */
+.panel {
+  position: sticky; top: 8px; z-index: 20;     /* top：画面上端からの距離 */
+  padding: 10px 12px;
+  box-shadow: 0 4px 14px rgba(90,166,240,.18);
+}
+/* ルーレット（左：出た目／中：EPタイトルとメッセージ／右：回すボタン） */
+.roll { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; }
+.num {
+  font-size: 40px; font-weight: 800; line-height: 1.1; min-width: 56px; text-align: center;
+  background: var(--grad);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.roll-mid { min-width: 0; }
+.epn { color: var(--ink); font-size: 14px; font-weight: 600; min-height: 20px; }
+.roll .msg { margin-top: 2px; min-height: 0; text-align: left; font-size: 12px; }
+
+/* パネル内の区切り */
+.panel-sec { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
+.panel-sec h2 { font-size: 12px; margin-bottom: 6px; }
+.hd { display: none; }                          /* 「出た目」の見出し：スマホでは隠す */
+
+/* 出た目の一覧：スマホは1行で横スクロール */
+.chips { display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+.chip {
+  flex: none; min-width: 34px; text-align: center; padding: 4px 8px;
+  border-radius: 999px; border: 1px solid var(--line);
+  font-size: 13px; background: var(--bg);
+}
+.chip.used { background: var(--line); color: var(--mute); text-decoration: line-through; } /* 出た目 */
+.chip.now  { background: var(--grad); color: #fff; border: 0; font-weight: 700; }           /* 今出た目 */
+
+/* 曲の選択：スマホは1列で、パネルが大きくなりすぎないよう高さを制限（中でスクロール） */
+.songs { display: grid; gap: 4px; max-height: 26vh; overflow-y: auto; }
+.song { text-align: left; border-radius: 10px; padding: 8px 10px; font-size: 14px; display: flex; gap: 10px; }
 .song b { color: var(--g2); min-width: 24px; }                      /* トラック番号 */
 .song.sel { background: var(--grad); color: #fff; border: 0; }       /* 選択中 */
 .song.sel b { color: #fff; }
 .song:disabled { text-decoration: line-through; }                    /* 配置済みの曲 */
 
-/* ---------- セットリストの枠 ---------- */
+/* タブレット：出た目を折り返して全部見せる／曲の選択は2列 */
+@media (min-width: 600px) {
+  .panel { top: 12px; padding: 12px 16px; }
+  .num { font-size: 48px; min-width: 64px; }
+  .hd { display: block; }
+  .chips { flex-wrap: wrap; overflow: visible; justify-content: center; }
+  .songs { grid-template-columns: 1fr 1fr; max-height: 30vh; }
+  .song { font-size: 15px; padding: 9px 12px; }
+}
+
+/* PC：パネルは左カラム。曲の選択は1列で、長いときはパネル全体がスクロール */
+@media (min-width: 1024px) {
+  .panel { top: 14px; max-height: calc(100vh - 28px); overflow-y: auto; }
+  .num { font-size: 56px; }
+  .songs { grid-template-columns: 1fr; max-height: none; overflow: visible; }
+}
+
+/* ---------- 6. 設定（フォーマット・オプション） ---------- */
+.fmts { display: flex; flex-wrap: wrap; gap: 8px; }
+.fmt.on { background: var(--grad); color: #fff; border: 0; font-weight: 700; }   /* 選択中 */
+
+.opts { display: flex; flex-direction: column; gap: 8px; }
+.opt { display: flex; align-items: center; gap: 8px; font-size: 14px; flex-wrap: wrap; }
+.opt .unl { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--mute); }
+
+/* ---------- 7. セットリスト ---------- */
 .list { display: grid; gap: 6px; }
 .slot {
   display: flex; align-items: center; gap: 10px;
@@ -150,19 +205,22 @@ input:disabled { opacity: .5; }
 .slot.hot  { border: 2px solid var(--g2); background: rgba(90,166,240,.1); cursor: pointer; } /* 配置できる空き枠 */
 .slot small { color: var(--mute); margin-left: auto; font-size: 11px; }       /* EPタイトル */
 /* ソロ枠のメンバー名入力欄 */
-.slot .solo-name { width: 130px; padding: 4px 8px; font-size: 13px; border-radius: 8px; }
+.slot .solo-name { width: 100px; padding: 4px 8px; font-size: 13px; border-radius: 8px; }
 /* MC・幕間映像の区切り線 */
 .mc {
   text-align: center; font-size: 12px; letter-spacing: .3em; color: var(--mute);
   padding: 2px 0;
   background: linear-gradient(90deg, transparent, var(--line), transparent);
 }
+@media (min-width: 600px) {
+  .slot .solo-name { width: 130px; }
+}
 
-/* ---------- 非公式の表記 ---------- */
+/* ---------- 8. 非公式の表記・リセットボタン ---------- */
 .disclaimer { margin-top: 32px; color: var(--mute); font-size: 12px; text-align: center; }
 .disclaimer p { margin: 4px 0; }
 
-/* ---------- リセットボタン（右下に追従する丸いアイコン） ---------- */
+/* リセット：右下に追従する丸いアイコン */
 .fab {
   position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   width: 52px; height: 52px; padding: 0; border: 0; border-radius: 50%;
