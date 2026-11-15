@@ -70,6 +70,9 @@ const ROWS = EPS.flatMap(([k, ep, songs]) =>
 const S = {
   format: FORMATS[0].id, // 選んだフォーマットのid（formats.js）
   solo: "",       // ソロ枠のメンバー名
+  opt: { pass: 0, dup: 0 }, // オプション：パスできる回数 / EPの重複を許す回数（開始前に設定）
+  passUsed: 0,    // パスを使った回数
+  dupUsed: 0,     // EPの重複（すでに出た目がもう一度出ること）が起きた回数
   theme: "",      // 入力されたテーマ
   drawn: [],      // 出た目（再び出ないように記録）
   cur: null,      // 今回出た目
@@ -114,6 +117,13 @@ function title() {
 // すでに配置された曲名の一覧（同じ曲を2回置けないようにするため）
 const placedTitles = () => Object.values(S.slots).map(s => s.t);
 
+// 次に出る可能性のある目の一覧
+//   まだ出ていない目は常に対象。すでに出た目は、EP重複の残り回数があるあいだだけ対象
+function spinPool() {
+  const dupLeft = S.opt.dup - S.dupUsed > 0;
+  return KEYS.filter(k => !S.drawn.includes(k) || dupLeft);
+}
+
 // そのEPに、まだ配置できる曲が残っているか
 const hasAvailable = k => ROWS.some(r => r.k === k && !placedTitles().includes(r.t));
 
@@ -135,20 +145,32 @@ function render() {
   ).join("");
   $("fdesc").textContent = `全${SLOT_IDS.length}曲` + (started ? "　（フォーマットを変えるにはリセットしてください）" : "");
 
+  // オプション（ドラフトが始まったら固定。変えるにはリセット）
+  [["optPass", S.opt.pass], ["optDup", S.opt.dup]].forEach(([id, v]) => {
+    if (document.activeElement !== $(id)) $(id).value = v;   // 入力中は上書きしない
+    $(id).disabled = started;
+  });
+  $("odesc").textContent =
+    `パス：残り${S.opt.pass - S.passUsed}／${S.opt.pass}回　EP重複：残り${S.opt.dup - S.dupUsed}／${S.opt.dup}回`;
+  const passLeft = S.opt.pass - S.passUsed;
+  $("pass").textContent = `この目をパスする（残り${passLeft}回）`;
+  $("pass").disabled = passLeft <= 0;
+
   // 1〜16・Cの一覧
   $("chips").innerHTML = KEYS.map(k =>
-    `<span class="chip ${S.drawn.includes(k) ? "used" : ""} ${S.cur === k ? "now" : ""}">${keyLabel(k)}</span>`
+    `<span class="chip ${S.drawn.includes(k) ? "used" : ""} ${S.cur === k ? "now" : ""}">${keyLabel(k)}${S.drawn.filter(d => d === k).length > 1 ? "×" + S.drawn.filter(d => d === k).length : ""}</span>`
   ).join("");
 
   // ルーレット表示と「回す」ボタン（配置待ち・完成・全部出た後は押せない）
   $("num").textContent = S.cur ? keyLabel(S.cur) : "?";
   $("epn").textContent = curRows[0] ? curRows[0].ep : "";
-  $("spin").disabled = S.pending || full || S.drawn.length >= KEYS.length;
+  $("spin").disabled = S.pending || full || spinPool().length === 0;
 
   // ガイドメッセージ
   $("msg").textContent = full ? "セットリスト完成！"
     : S.pending ? "曲を選んで、枠に配置してください"
-    : S.skipped ? "このEPの曲はすべて配置済みのため、この目は使えませんでした" : "";
+    : S.skipped ? "このEPの曲はすべて配置済みのため、この目は使えませんでした"
+    : spinPool().length === 0 ? "ルーレットの目がなくなりました" : "";
 
   // 曲の選択（配置待ちのときだけ表示）
   $("songCard").hidden = !S.pending;
@@ -184,9 +206,9 @@ function render() {
 
 // 「回す」：まだ出ていない目からランダムに1つ選び、演出のあと確定
 $("spin").onclick = () => {
-  const left = KEYS.filter(k => !S.drawn.includes(k));
-  if (!left.length) return;
-  const pick = left[Math.floor(Math.random() * left.length)];
+  const pool = spinPool();   // 出る可能性のある目
+  if (!pool.length) return;
+  const pick = pool[Math.floor(Math.random() * pool.length)];
 
   $("spin").disabled = true;
   let n = 0;
@@ -195,6 +217,7 @@ $("spin").onclick = () => {
     $("num").textContent = keyLabel(KEYS[Math.floor(Math.random() * KEYS.length)]);
     if (++n > SPIN_FRAMES) {
       clearInterval(timer);
+      if (S.drawn.includes(pick)) S.dupUsed++;   // すでに出たEPがもう一度出た＝重複を1回消費
       S.cur = pick; S.drawn.push(pick);
       S.pending = hasAvailable(pick); S.skipped = !S.pending; S.sel = null;
       render();
@@ -229,6 +252,18 @@ $("theme").oninput = e => {
   save();
 };
 
+// パス：出たEPから曲を置かずに見送る（目は使用済みのまま、パス回数を1消費）
+$("pass").onclick = () => {
+  if (!S.pending || S.passUsed >= S.opt.pass) return;
+  S.passUsed++; S.pending = false; S.sel = null;
+  render();
+};
+
+// オプションの回数入力（0〜99）：入力のたびに保存（開始前だけ入力できる）
+const readCount = el => Math.min(99, Math.max(0, parseInt(el.value, 10) || 0));
+$("optPass").oninput = e => { S.opt.pass = readCount(e.target); render(); };
+$("optDup").oninput  = e => { S.opt.dup  = readCount(e.target); render(); };
+
 // ソロ枠のメンバー名：入力のたびに保存（render()は呼ばない＝入力中にカーソルが飛ばない）
 $("list").oninput = e => {
   if (e.target.classList.contains("solo-name")) { S.solo = e.target.value; save(); }
@@ -254,7 +289,7 @@ $("reset").onclick = () => {
   }
   // 2回目：実行（テーマは残す）
   clearTimeout(resetTimer); resetTimer = null; btn.textContent = "リセット";
-  S.drawn = []; S.cur = null; S.slots = {}; S.sel = null; S.pending = false; S.skipped = false; S.solo = "";
+  S.drawn = []; S.cur = null; S.slots = {}; S.sel = null; S.pending = false; S.skipped = false; S.solo = ""; S.passUsed = 0; S.dupUsed = 0;
   render();
 };
 

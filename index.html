@@ -22,6 +22,20 @@
     <div class="msg left" id="fdesc"></div>     <!-- 全○曲の表示 -->
   </section>
 
+  <!-- ===== オプション（ドラフト開始前に回数を設定） ===== -->
+  <section class="card">
+    <h2>OPTION</h2>
+    <div class="opts">
+      <label>パス回数 <input type="number" id="optPass" min="0" max="99" value="0"></label>
+      <label>EPの重複回数 <input type="number" id="optDup" min="0" max="99" value="0"></label>
+    </div>
+    <div class="msg left" id="odesc"></div>     <!-- 残り回数の表示 -->
+    <div class="note">
+      パス：出たEPから曲を置かずに見送れる回数（その目は使用済みのまま）／
+      EPの重複：すでに出たEPがもう一度出てよい回数（同じ曲は置けません）。0で無効です。
+    </div>
+  </section>
+
   <!-- ===== ルーレット ===== -->
   <section class="card roll">
     <h2>ROULETTE</h2>
@@ -36,6 +50,7 @@
   <section class="card" id="songCard" hidden>
     <h2>曲を選ぶ → 枠をタップして配置</h2>
     <div class="songs" id="songs"></div>
+    <div class="row"><button id="pass">パス</button></div>   <!-- 回数はオプションで設定 -->
   </section>
 
   <!-- ===== セットリスト ===== -->
