@@ -193,9 +193,11 @@ function render() {
   $("list").innerHTML = LAYOUT.map(x => {
     if (x[0] === "d") return `<div class="mc">${esc(x[1])}</div>`;            // MC・幕間映像
     const id = x[1], s = S.slots[id], lab = slotLabel(id);
-    // ソロ枠だけ、メンバー名の入力欄をつける
+    // ソロ枠だけ、メンバーを選ぶプルダウン（data.js の MEMBERS）をつける
     const solo = x[2]
-      ? `<input class="solo-name" type="text" maxlength="20" placeholder="ソロ：メンバー名" value="${esc(S.solo)}">` : "";
+      ? `<select class="solo-name"><option value="">メンバーを選択</option>` +
+        MEMBERS.map(m => `<option value="${esc(m)}" ${m === S.solo ? "selected" : ""}>${esc(m)}</option>`).join("") +
+        `</select>` : "";
     if (s) {
       return `<div class="slot fill"><span class="no">${lab}</span>${solo}<span class="st">${esc(s.t)}</span><small>${esc(s.ep)}</small></div>`;
     }
@@ -242,7 +244,7 @@ $("songs").onclick = e => {
 
 // 空き枠をタップ → 選択中の曲を配置（配置後は変更不可）
 $("list").onclick = e => {
-  if (e.target.closest("input")) return;   // ソロ名の入力欄は配置の操作に含めない
+  if (e.target.closest("input, select")) return;   // ソロのメンバー選択は配置の操作に含めない
   const b = e.target.closest(".slot");
   if (!b || !b.dataset.i || !S.sel || !S.pending) return;
   const r = ROWS.find(x => x.k === S.cur && x.t === S.sel);
@@ -276,10 +278,12 @@ const readCount = el => Math.min(99, Math.max(0, parseInt(el.value, 10) || 0));
   };
 });
 
-// ソロ枠のメンバー名：入力のたびに保存（render()は呼ばない＝入力中にカーソルが飛ばない）
-$("list").oninput = e => {
+// ソロ枠のメンバー選択：選ぶたびに保存（render()は呼ばない＝選択が戻らない）
+const onSoloChange = e => {
   if (e.target.classList.contains("solo-name")) { S.solo = e.target.value; save(); }
 };
+$("list").oninput = onSoloChange;
+$("list").onchange = onSoloChange;
 
 // フォーマット選択：ドラフト開始前だけ変更できる
 $("fmts").onclick = e => {

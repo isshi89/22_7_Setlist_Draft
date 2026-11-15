@@ -204,8 +204,12 @@ input:disabled { opacity: .5; }
 .slot.fill { border-style: solid; cursor: default; }                  /* 配置済み */
 .slot.hot  { border: 2px solid var(--g2); background: rgba(90,166,240,.1); cursor: pointer; } /* 配置できる空き枠 */
 .slot small { color: var(--mute); margin-left: auto; font-size: 11px; }       /* EPタイトル */
-/* ソロ枠のメンバー名入力欄 */
-.slot .solo-name { width: 100px; padding: 4px 8px; font-size: 13px; border-radius: 8px; }
+/* ソロ枠のメンバー選択（プルダウン） */
+.slot .solo-name {
+  width: 120px; padding: 4px 8px; font: inherit; font-size: 13px;
+  border: 1px solid var(--line); border-radius: 8px;
+  background: var(--bg); color: var(--ink);
+}
 /* MC・幕間映像の区切り線 */
 .mc {
   text-align: center; font-size: 12px; letter-spacing: .3em; color: var(--mute);
@@ -213,12 +217,13 @@ input:disabled { opacity: .5; }
   background: linear-gradient(90deg, transparent, var(--line), transparent);
 }
 @media (min-width: 600px) {
-  .slot .solo-name { width: 130px; }
+  .slot .solo-name { width: 140px; }
 }
 
 /* ---------- 8. 非公式の表記・リセットボタン ---------- */
 .disclaimer { margin-top: 32px; color: var(--mute); font-size: 12px; text-align: center; }
 .disclaimer p { margin: 4px 0; }
+.disclaimer .credit { margin-top: 10px; }
 
 /* リセット：右下に追従する丸いアイコン */
 .fab {
