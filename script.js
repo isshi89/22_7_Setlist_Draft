@@ -55,6 +55,7 @@ function applyFormat() {
 
 const STORAGE_KEY = "s227v3";                 // 進行状況の保存キー（ブラウザのlocalStorage）
 const SITE_TITLE = "22/7セトリドラフト";     // 画像のタイトルのベース
+const OPT_MAX = 30;                         // オプションで選べる回数の上限（0〜この値。別に「無制限」も選べる）
 const SPIN_FRAMES = 22;                     // ルーレットの切り替え回数
 const SPIN_INTERVAL = 70;                   // 切り替え間隔（ミリ秒）。大きいほどゆっくり
 const RESET_CONFIRM_MS = 3000;              // リセット確認の受付時間（ミリ秒）
@@ -70,7 +71,7 @@ const ROWS = EPS.flatMap(([k, ep, songs]) =>
 const S = {
   format: FORMATS[0].id, // 選んだフォーマットのid（formats.js）
   solo: "",       // ソロ枠のメンバー名
-  opt: { pass: 0, dup: 0 }, // オプション：パスできる回数 / EPの重複を許す回数（開始前に設定）
+  opt: { pass: 0, dup: 0 }, // オプション：パスできる回数 / EPの重複を許す回数（開始前に設定。-1 = 無制限）
   passUsed: 0,    // パスを使った回数
   dupUsed: 0,     // EPの重複（すでに出た目がもう一度出ること）が起きた回数
   theme: "",      // 入力されたテーマ
@@ -117,10 +118,13 @@ function title() {
 // すでに配置された曲名の一覧（同じ曲を2回置けないようにするため）
 const placedTitles = () => Object.values(S.slots).map(s => s.t);
 
+// 残り回数（limit が -1 のときは無制限＝Infinity）
+const optLeft = (limit, used) => (limit < 0 ? Infinity : limit - used);
+
 // 次に出る可能性のある目の一覧
 //   まだ出ていない目は常に対象。すでに出た目は、EP重複の残り回数があるあいだだけ対象
 function spinPool() {
-  const dupLeft = S.opt.dup - S.dupUsed > 0;
+  const dupLeft = optLeft(S.opt.dup, S.dupUsed) > 0;
   return KEYS.filter(k => !S.drawn.includes(k) || dupLeft);
 }
 
@@ -146,19 +150,19 @@ function render() {
   $("fdesc").textContent = `全${SLOT_IDS.length}曲` + (started ? "　（フォーマットを変えるにはリセットしてください）" : "");
 
   // オプション（ドラフトが始まったら固定。変えるにはリセット）
-  [["optPass", S.opt.pass], ["optDup", S.opt.dup]].forEach(([id, v]) => {
-    if (document.activeElement !== $(id)) $(id).value = v;   // 入力中は上書きしない
-    $(id).disabled = started;
-  });
-  $("odesc").textContent =
-    `パス：残り${S.opt.pass - S.passUsed}／${S.opt.pass}回　EP重複：残り${S.opt.dup - S.dupUsed}／${S.opt.dup}回`;
-  const passLeft = S.opt.pass - S.passUsed;
-  $("pass").textContent = `この目をパスする（残り${passLeft}回）`;
+  $("optPass").value = String(S.opt.pass);
+  $("optDup").value = String(S.opt.dup);
+  $("optPass").disabled = $("optDup").disabled = started;
+  const passLeft = optLeft(S.opt.pass, S.passUsed);
+  const dupLeft = optLeft(S.opt.dup, S.dupUsed) > 0;   // true の間は、出た目も横線を引かない
+  const leftText = (limit, used) => (limit < 0 ? "無制限" : `残り${limit - used}／${limit}回`);
+  $("odesc").textContent = `パス：${leftText(S.opt.pass, S.passUsed)}　EP重複：${leftText(S.opt.dup, S.dupUsed)}`;
+  $("pass").textContent = `この目をパスする（${passLeft === Infinity ? "無制限" : "残り" + passLeft + "回"}）`;
   $("pass").disabled = passLeft <= 0;
 
   // 1〜16・Cの一覧
   $("chips").innerHTML = KEYS.map(k =>
-    `<span class="chip ${S.drawn.includes(k) ? "used" : ""} ${S.cur === k ? "now" : ""}">${keyLabel(k)}${S.drawn.filter(d => d === k).length > 1 ? "×" + S.drawn.filter(d => d === k).length : ""}</span>`
+    `<span class="chip ${S.drawn.includes(k) && !dupLeft ? "used" : ""} ${S.cur === k ? "now" : ""}">${keyLabel(k)}</span>`
   ).join("");
 
   // ルーレット表示と「回す」ボタン（配置待ち・完成・全部出た後は押せない）
@@ -254,15 +258,14 @@ $("theme").oninput = e => {
 
 // パス：出たEPから曲を置かずに見送る（目は使用済みのまま、パス回数を1消費）
 $("pass").onclick = () => {
-  if (!S.pending || S.passUsed >= S.opt.pass) return;
+  if (!S.pending || optLeft(S.opt.pass, S.passUsed) <= 0) return;
   S.passUsed++; S.pending = false; S.sel = null;
   render();
 };
 
-// オプションの回数入力（0〜99）：入力のたびに保存（開始前だけ入力できる）
-const readCount = el => Math.min(99, Math.max(0, parseInt(el.value, 10) || 0));
-$("optPass").oninput = e => { S.opt.pass = readCount(e.target); render(); };
-$("optDup").oninput  = e => { S.opt.dup  = readCount(e.target); render(); };
+// オプションの回数選択：変更したら保存（開始前だけ選べる）
+$("optPass").onchange = e => { S.opt.pass = parseInt(e.target.value, 10); render(); };
+$("optDup").onchange  = e => { S.opt.dup  = parseInt(e.target.value, 10); render(); };
 
 // ソロ枠のメンバー名：入力のたびに保存（render()は呼ばない＝入力中にカーソルが飛ばない）
 $("list").oninput = e => {
@@ -404,6 +407,12 @@ $("img").onclick = async () => {
 /* ---------------------------------------------------------
    7. 起動
    --------------------------------------------------------- */
+// オプションの選択肢を作る：無制限（-1）→ 0 → 1 … OPT_MAX
+["optPass", "optDup"].forEach(id => {
+  $(id).innerHTML = `<option value="-1">無制限</option>` +
+    Array.from({ length: OPT_MAX + 1 }, (_, i) => `<option value="${i}">${i}</option>`).join("");
+});
+
 restore();       // 前回の続きを復元
 applyFormat();   // 選択中のフォーマットから枠を作る
 render();    // 画面を描画

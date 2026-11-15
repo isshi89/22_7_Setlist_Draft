@@ -26,13 +26,13 @@
   <section class="card">
     <h2>OPTION</h2>
     <div class="opts">
-      <label>パス回数 <input type="number" id="optPass" min="0" max="99" value="0"></label>
-      <label>EPの重複回数 <input type="number" id="optDup" min="0" max="99" value="0"></label>
+      <label>パス回数 <select id="optPass"></select></label>   <!-- 選択肢はscript.jsが生成 -->
+      <label>EPの重複回数 <select id="optDup"></select></label>   <!-- 選択肢はscript.jsが生成 -->
     </div>
     <div class="msg left" id="odesc"></div>     <!-- 残り回数の表示 -->
     <div class="note">
       パス：出たEPから曲を置かずに見送れる回数（その目は使用済みのまま）／
-      EPの重複：すでに出たEPがもう一度出てよい回数（同じ曲は置けません）。0で無効です。
+      EPの重複：すでに出たEPがもう一度出てよい回数（同じ曲は置けません）。0で無効、「無制限」も選べます。重複が残っている間は、出た番号に横線を引きません。
     </div>
   </section>
 
