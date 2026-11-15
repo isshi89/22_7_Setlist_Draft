@@ -38,7 +38,7 @@ body::before {
   position: fixed; inset: 0 0 auto; height: 6px;
   background: var(--grad);
 }
-main { max-width: 920px; margin: 0 auto; padding: 28px 16px 60px; }
+main { max-width: 920px; margin: 0 auto; padding: 28px 16px 100px; }   /* 下の余白は右下ボタンと重ならないように広め */
 
 /* ---------- 見出し ---------- */
 h1 { font-size: 22px; letter-spacing: .08em; margin: 0 0 4px; font-weight: 700; }
@@ -83,7 +83,18 @@ input[type=text] {
 .msg.left { text-align: left; margin: 4px 0 12px; }
 
 /* ---------- ルーレット ---------- */
-.roll { text-align: center; }
+/* 画面上部に追従するルーレット（左：出た目／中：EPタイトルとメッセージ／右：回すボタン） */
+.roll {
+  position: sticky; top: 14px; z-index: 20;
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px;
+  padding: 10px 16px; text-align: left;
+  box-shadow: 0 4px 14px rgba(90,166,240,.18);
+}
+.roll .num { font-size: 44px; min-height: 0; min-width: 64px; text-align: center; }
+.roll-mid { min-width: 0; }
+.roll .epn { min-height: 0; color: var(--ink); font-size: 14px; font-weight: 600; }
+.roll .msg { margin-top: 2px; min-height: 0; text-align: left; font-size: 12px; }
+.roll button.pri { padding: 10px 22px; font-size: 15px; }
 .num {
   font-size: 64px; font-weight: 800; line-height: 1.1; min-height: 70px;
   background: var(--grad);
@@ -92,7 +103,7 @@ input[type=text] {
 .epn { color: var(--mute); font-size: 13px; min-height: 20px; }
 
 /* 1〜16・Cの一覧 */
-.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; justify-content: center; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
 .chip {
   min-width: 34px; text-align: center; padding: 4px 8px;
   border-radius: 999px; border: 1px solid var(--line);
@@ -150,3 +161,18 @@ input:disabled { opacity: .5; }
 /* ---------- 非公式の表記 ---------- */
 .disclaimer { margin-top: 32px; color: var(--mute); font-size: 12px; text-align: center; }
 .disclaimer p { margin: 4px 0; }
+
+/* ---------- リセットボタン（右下に追従する丸いアイコン） ---------- */
+.fab {
+  position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  width: 52px; height: 52px; padding: 0; border: 0; border-radius: 50%;
+  background: var(--grad); color: #fff; font-size: 26px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 14px rgba(90,166,240,.4); z-index: 30;
+}
+.fab.armed { outline: 3px solid var(--g2); outline-offset: 3px; }   /* 1回押した確認状態 */
+.fab-tip {
+  position: fixed; right: 78px; bottom: calc(29px + env(safe-area-inset-bottom, 0px));
+  background: var(--ink); color: var(--bg); font-size: 12px;
+  padding: 6px 12px; border-radius: 999px; z-index: 30;
+}

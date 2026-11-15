@@ -293,14 +293,14 @@ $("fmts").onclick = e => {
 // リセット：誤操作防止のため2回押しで実行（途中でも、いつでもOK）
 let resetTimer = null;
 $("reset").onclick = () => {
-  const btn = $("reset");
-  if (!resetTimer) {   // 1回目：確認状態にする
-    btn.textContent = "もう一度押すとリセット";
-    resetTimer = setTimeout(() => { resetTimer = null; btn.textContent = "リセット"; }, RESET_CONFIRM_MS);
+  const btn = $("reset"), tip = $("resetTip");
+  if (!resetTimer) {   // 1回目：確認状態にする（ボタンに枠、横に案内を出す）
+    btn.classList.add("armed"); tip.hidden = false;
+    resetTimer = setTimeout(() => { resetTimer = null; btn.classList.remove("armed"); tip.hidden = true; }, RESET_CONFIRM_MS);
     return;
   }
   // 2回目：実行（テーマは残す）
-  clearTimeout(resetTimer); resetTimer = null; btn.textContent = "リセット";
+  clearTimeout(resetTimer); resetTimer = null; btn.classList.remove("armed"); tip.hidden = true;
   S.drawn = []; S.cur = null; S.slots = {}; S.sel = null; S.pending = false; S.skipped = false; S.solo = ""; S.passUsed = 0; S.dupUsed = 0;
   render();
 };
