@@ -413,18 +413,54 @@ function makeImage() {
   return new Promise(res => c.toBlob(res, "image/png"));
 }
 
-// 「画像で保存」：PNGを作り、aタグのdownloadでダウンロード
+// 画像をPNGで保存（aタグのdownloadでダウンロード）
+async function saveImage() {
+  const blob = await makeImage();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "setlist.png";   // ← 保存されるファイル名
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+// 「画像で保存」
 $("img").onclick = async () => {
   try {
-    const blob = await makeImage();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = "setlist.png";   // ← 保存されるファイル名
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    await saveImage();
     $("msg").textContent = "画像を保存しました";
   } catch (e) {
     $("msg").textContent = "画像を保存できませんでした";
+  }
+};
+
+/* ---------------------------------------------------------
+   6-2. Xへの投稿
+     スマホ … 共有メニューを開く（画像つき。共有先でXを選ぶ）
+     PC     … 文章入りの投稿画面を開き、画像も保存する（投稿画面に画像を添付）
+   --------------------------------------------------------- */
+const postText = () => title();                            // 投稿の文章（ここを書き換えると文面が変わる）
+const postUrl = () => location.origin + location.pathname; // 投稿に入れるURL（このサイトのURL）
+
+$("post").onclick = async () => {
+  try {
+    // スマホ（タッチ操作の端末）：画像つきで共有メニューを開く
+    if (matchMedia("(pointer: coarse)").matches && navigator.canShare) {
+      const blob = await makeImage();
+      const file = new File([blob], "setlist.png", { type: "image/png" });
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], text: postText() + "\n" + postUrl() });
+        return;
+      }
+    }
+    // PCなど：文章入りの投稿画面を開く → 画像を保存（投稿画面で添付してもらう）
+    window.open(
+      "https://twitter.com/intent/tweet?text=" + encodeURIComponent(postText()) +
+      "&url=" + encodeURIComponent(postUrl()), "_blank", "noopener");
+    await saveImage();
+    $("msg").textContent = "投稿画面を開きました。保存した画像を添付してください";
+  } catch (e) {
+    if (e && e.name === "AbortError") return;   // 共有メニューを閉じただけ
+    $("msg").textContent = "投稿を開始できませんでした";
   }
 };
 
