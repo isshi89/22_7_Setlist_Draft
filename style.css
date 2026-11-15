@@ -28,6 +28,7 @@
   --g1:   #8fe3f2;   /* グラデの水色（明るい側） */
   --g2:   #5aa6f0;   /* グラデの青（濃い側） */
   --grad: linear-gradient(135deg, var(--g1), var(--g2));
+  --header-h: 46px;  /* ヘッダーの高さ（操作パネルの追従位置にも使う） */
 }
 
 /* ダークモード（端末の設定が暗いとき）。不要なら丸ごと削除してOK */
@@ -47,22 +48,21 @@ body {
   font-family: "Helvetica Neue", "Hiragino Sans", "Noto Sans JP", sans-serif;
   line-height: 1.5;
 }
-/* 画面上部のグラデの帯 */
-body::before {
-  content: "";
-  position: fixed; inset: 0 0 auto; height: 6px;
-  background: var(--grad);
-  z-index: 40;
+/* ヘッダー（上部のグラデの帯。タイトルを中に入れる） */
+.site-header {
+  position: sticky; top: 0; z-index: 40;
+  height: var(--header-h);
+  background: var(--grad); color: #fff;
+  box-shadow: 0 2px 10px rgba(90,166,240,.3);
+}
+.site-header .in {
+  max-width: 1120px; height: 100%; margin: 0 auto; padding: 0 12px;
+  display: flex; align-items: center;
 }
 main { max-width: 1120px; margin: 0 auto; padding: 20px 12px 100px; }  /* 下の余白は右下ボタンと重ならないため */
 
-h1 { font-size: 20px; letter-spacing: .08em; margin: 0 0 4px; font-weight: 700; }
-/* 「22/7」の文字をグラデにする */
-h1 span {
-  background: var(--grad);
-  -webkit-background-clip: text; background-clip: text;
-  color: transparent;
-}
+h1 { font-size: 20px; letter-spacing: .08em; margin: 0; font-weight: 700; line-height: 1; }
+h1 span { font-weight: 800; }   /* 「22/7」を太く */
 h2 { font-size: 14px; margin: 0 0 10px; letter-spacing: .06em; }
 .sub { color: var(--mute); font-size: 12px; margin: 0 0 14px; }
 
@@ -128,7 +128,7 @@ input:disabled { opacity: .5; }
 
 /* ---------- 5. 操作パネル（スクロールしても画面に追従） ---------- */
 .panel {
-  position: sticky; top: 8px; z-index: 20;     /* top：画面上端からの距離 */
+  position: sticky; top: calc(var(--header-h) + 8px); z-index: 20;     /* top：ヘッダーの下からの距離 */
   padding: 10px 12px;
   box-shadow: 0 4px 14px rgba(90,166,240,.18);
 }
@@ -168,7 +168,9 @@ input:disabled { opacity: .5; }
 
 /* タブレット：出た目を折り返して全部見せる／曲の選択は2列 */
 @media (min-width: 600px) {
-  .panel { top: 12px; padding: 12px 16px; }
+  :root { --header-h: 54px; }
+  .site-header .in { padding: 0 16px; }
+  .panel { top: calc(var(--header-h) + 12px); padding: 12px 16px; }
   .num { font-size: 48px; min-width: 64px; }
   .hd { display: block; }
   .chips { flex-wrap: wrap; overflow: visible; justify-content: center; }
@@ -178,7 +180,7 @@ input:disabled { opacity: .5; }
 
 /* PC：パネルは左カラム。曲の選択は1列で、長いときはパネル全体がスクロール */
 @media (min-width: 1024px) {
-  .panel { top: 14px; max-height: calc(100vh - 28px); overflow-y: auto; }
+  .panel { top: calc(var(--header-h) + 14px); max-height: calc(100vh - var(--header-h) - 28px); overflow-y: auto; }
   .num { font-size: 56px; }
   .songs { grid-template-columns: 1fr; max-height: none; overflow: visible; }
 }
