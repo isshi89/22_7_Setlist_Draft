@@ -55,7 +55,6 @@ function applyFormat() {
 
 const STORAGE_KEY = "s227v3";                 // 進行状況の保存キー（ブラウザのlocalStorage）
 const SITE_TITLE = "22/7セトリドラフト";     // 画像のタイトルのベース
-const OPT_MAX = 30;                         // オプションで選べる回数の上限（0〜この値。別に「無制限」も選べる）
 const SPIN_FRAMES = 22;                     // ルーレットの切り替え回数
 const SPIN_INTERVAL = 70;                   // 切り替え間隔（ミリ秒）。大きいほどゆっくり
 const RESET_CONFIRM_MS = 3000;              // リセット確認の受付時間（ミリ秒）
@@ -150,9 +149,13 @@ function render() {
   $("fdesc").textContent = `全${SLOT_IDS.length}曲` + (started ? "　（フォーマットを変えるにはリセットしてください）" : "");
 
   // オプション（ドラフトが始まったら固定。変えるにはリセット）
-  $("optPass").value = String(S.opt.pass);
-  $("optDup").value = String(S.opt.dup);
-  $("optPass").disabled = $("optDup").disabled = started;
+  [["Pass", S.opt.pass], ["Dup", S.opt.dup]].forEach(([n, v]) => {
+    const num = $("opt" + n), inf = $("opt" + n + "Inf");
+    inf.checked = v < 0;                                          // 無制限（-1）のときチェック
+    if (v >= 0 && document.activeElement !== num) num.value = v;  // 入力中は上書きしない
+    num.disabled = started || v < 0;                              // 無制限のときは数字欄を使えない
+    inf.disabled = started;
+  });
   const passLeft = optLeft(S.opt.pass, S.passUsed);
   const dupLeft = optLeft(S.opt.dup, S.dupUsed) > 0;   // true の間は、出た目も横線を引かない
   const leftText = (limit, used) => (limit < 0 ? "無制限" : `残り${limit - used}／${limit}回`);
@@ -263,9 +266,15 @@ $("pass").onclick = () => {
   render();
 };
 
-// オプションの回数選択：変更したら保存（開始前だけ選べる）
-$("optPass").onchange = e => { S.opt.pass = parseInt(e.target.value, 10); render(); };
-$("optDup").onchange  = e => { S.opt.dup  = parseInt(e.target.value, 10); render(); };
+// オプションの回数：数字欄（0〜99）と「無制限」チェック。変更のたびに保存（開始前だけ操作できる）
+const readCount = el => Math.min(99, Math.max(0, parseInt(el.value, 10) || 0));
+[["Pass", "pass"], ["Dup", "dup"]].forEach(([n, key]) => {
+  $("opt" + n).oninput = e => { S.opt[key] = readCount(e.target); render(); };
+  $("opt" + n + "Inf").onchange = e => {
+    S.opt[key] = e.target.checked ? -1 : readCount($("opt" + n));   // チェックを外すと、数字欄の値に戻る
+    render();
+  };
+});
 
 // ソロ枠のメンバー名：入力のたびに保存（render()は呼ばない＝入力中にカーソルが飛ばない）
 $("list").oninput = e => {
@@ -407,12 +416,6 @@ $("img").onclick = async () => {
 /* ---------------------------------------------------------
    7. 起動
    --------------------------------------------------------- */
-// オプションの選択肢を作る：無制限（-1）→ 0 → 1 … OPT_MAX
-["optPass", "optDup"].forEach(id => {
-  $(id).innerHTML = `<option value="-1">無制限</option>` +
-    Array.from({ length: OPT_MAX + 1 }, (_, i) => `<option value="${i}">${i}</option>`).join("");
-});
-
 restore();       // 前回の続きを復元
 applyFormat();   // 選択中のフォーマットから枠を作る
 render();    // 画面を描画
