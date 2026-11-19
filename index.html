@@ -24,36 +24,7 @@
        スマホ・タブレット … 上から「操作パネル（追従）」→「設定とセットリスト」
        PC                … 左に「操作パネル（追従）」／右に「設定とセットリスト」 -->
   <div class="layout">
-
-    <!-- ===== 操作パネル：ルーレット・出た目・曲の選択（スクロールしても画面に追従） ===== -->
-    <aside class="card panel">
-
-      <!-- ルーレット -->
-      <div class="roll">
-        <div class="num" id="num">?</div>            <!-- 出た目（01〜17 / C / A1 など） -->
-        <div class="roll-mid">
-          <div class="epn" id="epn"></div>           <!-- 出たEPのタイトル -->
-          <div class="msg" id="msg"></div>           <!-- ガイドメッセージ -->
-        </div>
-        <button class="pri" id="spin">回す</button>
-      </div>
-
-      <!-- 出た目の一覧 -->
-      <div class="panel-sec">
-        <h2 class="hd">出た目</h2>                   <!-- スマホでは見出しを隠す -->
-        <div class="chips" id="chips"></div>         <!-- 出た目は打ち消し線（重複が残っている間は引かない） -->
-      </div>
-
-      <!-- 曲の選択（ルーレットの後だけ表示） -->
-      <div class="panel-sec" id="songCard" hidden>
-        <h2>曲を選ぶ → 枠をタップして配置</h2>
-        <div class="songs" id="songs"></div>
-        <div class="row"><button id="pass">パス</button></div>   <!-- 回数はオプションで設定 -->
-      </div>
-
-    </aside>
-
-    <!-- ===== 右側（スマホ・タブレットでは下）：設定とセットリスト ===== -->
+        <!-- ===== 右側（スマホ・タブレットでは下）：設定とセットリスト ===== -->
     <div class="main-col">
 
       <!-- 設定（タブレット・PCでは2列で並ぶ） -->
@@ -86,6 +57,34 @@
 
       </div>
 
+        <!-- ===== 操作パネル：ルーレット・出た目・曲の選択（スクロールしても画面に追従） ===== -->
+    <aside class="card panel">
+
+      <!-- ルーレット -->
+      <div class="roll">
+        <div class="num" id="num">?</div>            <!-- 出た目（01〜17 / C / A1 など） -->
+        <div class="roll-mid">
+          <div class="epn" id="epn"></div>           <!-- 出たEPのタイトル -->
+          <div class="msg" id="msg"></div>           <!-- ガイドメッセージ -->
+        </div>
+        <button class="pri" id="spin">回す</button>
+      </div>
+
+      <!-- 出た目の一覧 -->
+      <div class="panel-sec">
+        <h2 class="hd">出た目</h2>                   <!-- スマホでは見出しを隠す -->
+        <div class="chips" id="chips"></div>         <!-- 出た目は打ち消し線（重複が残っている間は引かない） -->
+      </div>
+
+      <!-- 曲の選択（ルーレットの後だけ表示） -->
+      <div class="panel-sec" id="songCard" hidden>
+        <h2>曲を選ぶ → 枠をタップして配置</h2>
+        <div class="songs" id="songs"></div>
+        <div class="row"><button id="pass">パス</button></div>   <!-- 回数はオプションで設定 -->
+      </div>
+
+    </aside>
+
       <!-- セットリスト -->
       <section class="card">
         <h2>SETLIST</h2>
@@ -99,6 +98,10 @@
       </section>
 
     </div>
+
+  
+
+
   </div>
 
   <!-- ===== 非公式の表記（文言はここで書き換え） ===== -->
