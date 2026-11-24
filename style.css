@@ -25,8 +25,8 @@
   --ink:  #1f1e33;   /* 文字色 */
   --mute: #7b8b97;   /* 薄い文字色 */
   --line: #dbeaf3;   /* 枠線 */
-  --g1:   #8fe3f2;   /* グラデの水色（明るい側） */
-  --g2:   #5aa6f0;   /* グラデの青（濃い側） */
+  --g1:   #66d5e9;   /* グラデの水色（明るい側） */
+  --g2:   #257ed6;   /* グラデの青（濃い側） */
   --grad: linear-gradient(135deg, var(--g1), var(--g2));
   --header-h: 46px;  /* ヘッダーの高さ（操作パネルの追従位置にも使う） */
 }
@@ -260,7 +260,6 @@ input:disabled { opacity: .5; }
 .disclaimer p { margin: 4px 0; }
 .disclaimer .credit { margin-top: 10px; }
 
-/* リセット：右下に追従する丸いアイコン */
 .fab {
   position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   width: 52px; height: 52px; padding: 0; border: 0; border-radius: 50%;
