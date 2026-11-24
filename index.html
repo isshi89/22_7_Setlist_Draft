@@ -19,7 +19,7 @@
 
 <main>
 
-  <p class="sub">ルーレットで出たEP(シングル)の楽曲から選び、好きな枠に配置。自分だけの22/7セットリストを作ろう!!
+  <p class="sub">ルーレットで出たEP(シングル)の楽曲から選び、好きな枠に配置。<br>自分だけの22/7セットリストを作ろう!!
   </p>
 
   <!-- ===== 遊び方（タップで開閉。番号は各ブロックの番号と対応） ===== -->
@@ -28,7 +28,7 @@
     <ul>
       <li><span class="step-no">1</span><span><b>FORMAT</b>：セトリの形式（通常・定期公演など）を選択</span></li>
       <li><span class="step-no">2</span><span><b>OPTION</b>：パスとEP(シングル)の重複回数を設定</span></li>
-      <li><span class="step-no">3</span><span><b>ルーレット</b>：「回す」で出たEPから曲を選び、4の空き枠をタップして配置</span></li>
+      <li><span class="step-no">3</span><span><b>ROULETTE</b>：「回す」で出たEPから曲を選び、4の空き枠をタップして配置</span></li>
       <li><span class="step-no">4</span><span><b>SETLIST</b>：枠がすべて埋まったら完成。画像で保存したり、Xに投稿しよう!!</span></li>
     </ul>
     <p class="note">ルーレットを回したあとは、1・2の変更不可<br>リセットは右下の「↻」を2回</p>
@@ -86,7 +86,8 @@
       <!-- 出た目の一覧 -->
       <div class="panel-sec">
         <h2 class="hd">出た目</h2>                   <!-- スマホでは見出しを隠す -->
-        <div class="chips" id="chips"></div>         <!-- 出た目は打ち消し線（重複が残っている間は引かない） -->
+        <div class="chips" id="chips"></div> 
+        <div class="msg left" id="odesc"></div>         <!-- 出た目は打ち消し線（重複が残っている間は引かない） -->
       </div>
 
       <!-- 曲の選択（ルーレットの後だけ表示） -->
