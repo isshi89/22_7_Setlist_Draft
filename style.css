@@ -20,9 +20,9 @@
 
 /* ---------- 1. 色の設定（ここを変えると全体の色が変わる） ---------- */
 :root {
-  --bg:   #ffffff;   /* 背景 */
+  --bg:   #f5f5f5;   /* 背景 */
   --card: #f6fbfe;   /* カードの背景 */
-  --ink:  #1e2b36;   /* 文字色 */
+  --ink:  #1f1e33;   /* 文字色 */
   --mute: #7b8b97;   /* 薄い文字色 */
   --line: #dbeaf3;   /* 枠線 */
   --g1:   #8fe3f2;   /* グラデの水色（明るい側） */
@@ -271,6 +271,6 @@ input:disabled { opacity: .5; }
 .fab.armed { outline: 3px solid var(--g2); outline-offset: 3px; }   /* 1回押した確認状態 */
 .fab-tip {
   position: fixed; right: 78px; bottom: calc(29px + env(safe-area-inset-bottom, 0px));
-  background: var(--ink); color: var(--bg); font-size: 12px;
+  background: var(--g2); color: var(--bg); font-size: 12px;
   padding: 6px 12px; border-radius: 999px; z-index: 30;
 }
