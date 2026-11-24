@@ -160,7 +160,7 @@ function render() {
   const dupLeft = optLeft(S.opt.dup, S.dupUsed) > 0;   // true の間は、出た目も横線を引かない
   const leftText = (limit, used) => (limit < 0 ? "無制限" : `残り${limit - used}／${limit}回`);
   $("odesc").textContent = `パス：${leftText(S.opt.pass, S.passUsed)}　EP重複：${leftText(S.opt.dup, S.dupUsed)}`;
-  $("pass").textContent = `この目をパスする（${passLeft === Infinity ? "無制限" : "残り" + passLeft + "回"}）`;
+  $("pass").textContent = `パス（${passLeft === Infinity ? "無制限" : "残り" + passLeft + "回"}）`;
   $("pass").disabled = passLeft <= 0;
 
   // 1〜16・Cの一覧
@@ -236,12 +236,25 @@ $("spin").onclick = () => {
   }, SPIN_INTERVAL);
 };
 
-// 曲をタップ → 選択
+// 曲を選んだら、最初の空き枠までスクロールする（パネルが上に重なる縦並びの画面のみ）
+function scrollToSlots() {
+  if (!matchMedia("(max-width: 1023px)").matches) return;   // PCは左右に並ぶので不要
+  const slot = document.querySelector(".slot.hot");          // 最初の空き枠
+  const panel = document.querySelector(".panel");
+  if (!slot || !panel) return;
+  const limit = panel.getBoundingClientRect().bottom + 8;    // パネルの下端（これより上は隠れる）
+  const r = slot.getBoundingClientRect();
+  if (r.top >= limit && r.bottom <= innerHeight) return;     // すでに見えているなら動かさない
+  window.scrollTo({ top: window.scrollY + r.top - limit, behavior: "smooth" });
+}
+
+// 曲をタップ → 選択 → 空き枠へスクロール
 $("songs").onclick = e => {
   const b = e.target.closest(".song");
   if (!b || b.disabled) return;
   S.sel = b.dataset.t;
   render();
+  scrollToSlots();
 };
 
 // 空き枠をタップ → 選択中の曲を配置（配置後は変更不可）

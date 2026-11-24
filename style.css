@@ -85,7 +85,7 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 /* 「回す」ボタン（グラデ） */
 button.pri {
   background: var(--grad); color: #fff;
-  border: 0; font-weight: 700; padding: 10px 22px; font-size: 15px;
+  border: 0; font-weight: 700; padding: 8px 16px; font-size: 14px;
 }
 input[type=text] {
   width: 100%;
@@ -104,11 +104,27 @@ input:disabled { opacity: .5; }
 .msg.left { text-align: left; margin: 4px 0 12px; }
 .note { font-size: 12px; color: var(--mute); margin-top: 6px; }
 
+/* 操作の順番を示す番号（1〜4）：見出しや遊び方に付く丸いバッジ */
+.step-no {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--grad); color: #fff; font-size: 12px; font-weight: 700; line-height: 1;
+  margin-right: 8px; vertical-align: middle;
+}
+
+/* 遊び方 */
+.howto { margin-bottom: 12px; }
+.howto summary { cursor: pointer; font-weight: 700; font-size: 14px; }
+.howto ul { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 8px; font-size: 13px; }
+.howto li { display: flex; align-items: flex-start; gap: 0; }
+.howto li .step-no { margin-top: 1px; }
+.howto .note { margin-top: 10px; }
+
 /* ---------- 4. レイアウト ---------- */
 /* スマホ：1列（上から 操作パネル → 設定とセットリスト） */
+/* 上から：遊び方 → 設定（1 FORMAT・2 OPTION）→ 作業エリア（3 操作パネル・4 セットリスト） */
+.settings { display: grid; gap: 12px; margin-bottom: 12px; }
 .layout   { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
-.main-col { display: grid; gap: 12px; min-width: 0; }
-.settings { display: grid; gap: 12px; }
 
 /* タブレット：設定（フォーマット・オプション）を2列に */
 @media (min-width: 600px) {
@@ -122,45 +138,48 @@ input:disabled { opacity: .5; }
 /* PC：左に操作パネル（追従）、右に設定とセットリスト */
 @media (min-width: 1024px) {
   h1 { font-size: 24px; }
+  .settings { gap: 16px; margin-bottom: 16px; }
   .layout { grid-template-columns: 380px minmax(0, 1fr); gap: 20px; align-items: start; }
-  .main-col { gap: 16px; }
 }
 
 /* ---------- 5. 操作パネル（スクロールしても画面に追従） ---------- */
 .panel {
   position: sticky; top: calc(var(--header-h) + 8px); z-index: 20;     /* top：ヘッダーの下からの距離 */
-  padding: 10px 12px;
+  padding: 8px 10px;
   box-shadow: 0 4px 14px rgba(90,166,240,.18);
 }
 /* ルーレット（左：出た目／中：EPタイトルとメッセージ／右：回すボタン） */
-.roll { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; }
+.roll { display: grid; grid-template-columns: auto auto 1fr auto; align-items: center; gap: 10px; }
 .num {
-  font-size: 40px; font-weight: 800; line-height: 1.1; min-width: 56px; text-align: center;
+  font-size: 32px; font-weight: 800; line-height: 1.1; min-width: 44px; text-align: center;
   background: var(--grad);
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 .roll-mid { min-width: 0; }
-.epn { color: var(--ink); font-size: 14px; font-weight: 600; min-height: 20px; }
-.roll .msg { margin-top: 2px; min-height: 0; text-align: left; font-size: 12px; }
+.epn { color: var(--ink); font-size: 13px; font-weight: 600; min-height: 18px; }
+.roll .msg { margin-top: 0; min-height: 0; text-align: left; font-size: 11px; line-height: 1.3; }
 
 /* パネル内の区切り */
-.panel-sec { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
-.panel-sec h2 { font-size: 12px; margin-bottom: 6px; }
+.panel-sec { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line); }
+.panel-sec h2 { font-size: 11px; margin-bottom: 4px; }
+.sec-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.sec-head h2 { margin: 0; }
+#pass { padding: 5px 14px; font-size: 12px; }
 .hd { display: none; }                          /* 「出た目」の見出し：スマホでは隠す */
 
 /* 出た目の一覧：スマホは1行で横スクロール */
 .chips { display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
 .chip {
-  flex: none; min-width: 34px; text-align: center; padding: 4px 8px;
+  flex: none; min-width: 30px; text-align: center; padding: 2px 6px;
   border-radius: 999px; border: 1px solid var(--line);
-  font-size: 13px; background: var(--bg);
+  font-size: 12px; background: var(--bg);
 }
 .chip.used { background: var(--line); color: var(--mute); text-decoration: line-through; } /* 出た目 */
 .chip.now  { background: var(--grad); color: #fff; border: 0; font-weight: 700; }           /* 今出た目 */
 
 /* 曲の選択：スマホは1列で、パネルが大きくなりすぎないよう高さを制限（中でスクロール） */
-.songs { display: grid; gap: 4px; max-height: 26vh; overflow-y: auto; }
-.song { text-align: left; border-radius: 10px; padding: 8px 10px; font-size: 14px; display: flex; gap: 10px; }
+.songs { display: grid; gap: 3px; max-height: 17vh; overflow-y: auto; }
+.song { text-align: left; border-radius: 10px; padding: 6px 10px; font-size: 13px; display: flex; gap: 10px; }
 .song b { color: var(--g2); min-width: 24px; }                      /* トラック番号 */
 .song.sel { background: var(--grad); color: #fff; border: 0; }       /* 選択中 */
 .song.sel b { color: #fff; }
@@ -172,6 +191,15 @@ input:disabled { opacity: .5; }
   .site-header .in { padding: 0 16px; }
   .panel { top: calc(var(--header-h) + 12px); padding: 12px 16px; }
   .num { font-size: 48px; min-width: 64px; }
+  .roll { gap: 12px; }
+  .epn { font-size: 14px; min-height: 20px; }
+  .roll .msg { margin-top: 2px; font-size: 12px; line-height: 1.5; }
+  button.pri { padding: 10px 22px; font-size: 15px; }
+  .panel-sec { margin-top: 8px; padding-top: 8px; }
+  .panel-sec h2 { font-size: 12px; margin-bottom: 6px; }
+  .sec-head { margin-bottom: 8px; }
+  #pass { padding: 8px 16px; font-size: inherit; }
+  .chip { min-width: 34px; padding: 4px 8px; font-size: 13px; }
   .hd { display: block; }
   .chips { flex-wrap: wrap; overflow: visible; justify-content: center; }
   .songs { grid-template-columns: 1fr 1fr; max-height: 30vh; }
