@@ -53,7 +53,7 @@ function applyFormat() {
   SLOT_IDS = LAYOUT.filter(x => x[0] === "s").map(x => x[1]);
 }
 
-const STORAGE_KEY = "s227v3";                 // 進行状況の保存キー（ブラウザのlocalStorage）
+const STORAGE_KEY = "s227v4";                 // 進行状況の保存キー（ブラウザのlocalStorage）
 const SITE_TITLE = "22/7セトリドラフト";     // 画像のタイトルのベース
 const SPIN_FRAMES = 22;                     // ルーレットの切り替え回数
 const SPIN_INTERVAL = 70;                   // 切り替え間隔（ミリ秒）。大きいほどゆっくり
@@ -102,7 +102,7 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-// 目の表示：数字は2桁（1→"01"）、それ以外はそのまま（"C"、"A1"、"3rd"）
+// 目の表示：数字は2桁（1→"01"）、それ以外はそのまま（"Char"、"AL1"、"3rd"）
 function keyLabel(k) { return /^\d+$/.test(k) ? String(k).padStart(2, "0") : k; }
 
 // 枠の表示名："1"→"M1"、"EN1"→"EN1"
@@ -236,16 +236,23 @@ $("spin").onclick = () => {
   }, SPIN_INTERVAL);
 };
 
-// 曲を選んだら、最初の空き枠までスクロールする（パネルが上に重なる縦並びの画面のみ）
+// 曲を選んだら、最初の空き枠へ自動でスクロールする
+//   スマホ・タブレット（縦並び）… 空き枠が、操作パネルのすぐ下に来るよう毎回合わせる
+//   PC（左右並び）            … 空き枠が画面内に見えていなければ、見える位置まで動かす
 function scrollToSlots() {
-  if (!matchMedia("(max-width: 1023px)").matches) return;   // PCは左右に並ぶので不要
   const slot = document.querySelector(".slot.hot");          // 最初の空き枠
   const panel = document.querySelector(".panel");
-  if (!slot || !panel) return;
-  const limit = panel.getBoundingClientRect().bottom + 8;    // パネルの下端（これより上は隠れる）
+  const header = document.querySelector(".site-header");
+  if (!slot || !panel || !header) return;
+  const stacked = matchMedia("(max-width: 1023px)").matches;
+  const top = stacked
+    ? header.getBoundingClientRect().bottom + 8 + panel.getBoundingClientRect().height + 8   // 追従したパネルの下端（これより上は隠れる）
+    : header.getBoundingClientRect().bottom + 16;                                           // ヘッダーの下端
   const r = slot.getBoundingClientRect();
-  if (r.top >= limit && r.bottom <= innerHeight) return;     // すでに見えているなら動かさない
-  window.scrollTo({ top: window.scrollY + r.top - limit, behavior: "smooth" });
+  if (!stacked && r.top >= top && r.bottom <= innerHeight - 16) return;   // PC：すでに見えているなら動かさない
+  const delta = r.top - top;
+  if (Math.abs(delta) < 2) return;
+  window.scrollBy({ top: delta, behavior: "smooth" });
 }
 
 // 曲をタップ → 選択 → 空き枠へスクロール

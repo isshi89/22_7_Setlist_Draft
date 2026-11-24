@@ -151,7 +151,8 @@ input:disabled { opacity: .5; }
 /* ルーレット（左：出た目／中：EPタイトルとメッセージ／右：回すボタン） */
 .roll { display: grid; grid-template-columns: auto auto 1fr auto; align-items: center; gap: 10px; }
 .num {
-  font-size: 32px; font-weight: 800; line-height: 1.1; min-width: 44px; text-align: center;
+  font-size: 32px; font-weight: 900; line-height: 1.1; min-width: 44px; text-align: center;
+  -webkit-text-stroke: .06em #78c4f0;   /* 細く見えないよう縁取りで太くする（スマホのみ。色はグラデの中間色。タブレット以上は下で解除） */
   background: var(--grad);
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
@@ -168,11 +169,12 @@ input:disabled { opacity: .5; }
 .hd { display: none; }                          /* 「出た目」の見出し：スマホでは隠す */
 
 /* 出た目の一覧：スマホは1行で横スクロール */
-.chips { display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+/* 出た目の一覧：スマホは11列のマス目で、全部を一度に表示（スクロール不要） */
+.chips { display: grid; grid-template-columns: repeat(11, 1fr); gap: 3px; }
 .chip {
-  flex: none; min-width: 30px; text-align: center; padding: 2px 6px;
+  min-width: 0; text-align: center; padding: 2px 0;
   border-radius: 999px; border: 1px solid var(--line);
-  font-size: 12px; background: var(--bg);
+  font-size: 11px; background: var(--bg);
 }
 .chip.used { background: var(--line); color: var(--mute); text-decoration: line-through; } /* 出た目 */
 .chip.now  { background: var(--grad); color: #fff; border: 0; font-weight: 700; }           /* 今出た目 */
@@ -190,7 +192,7 @@ input:disabled { opacity: .5; }
   :root { --header-h: 54px; }
   .site-header .in { padding: 0 16px; }
   .panel { top: calc(var(--header-h) + 12px); padding: 12px 16px; }
-  .num { font-size: 48px; min-width: 64px; }
+  .num { font-size: 48px; min-width: 64px; font-weight: 800; -webkit-text-stroke: 0; }
   .roll { gap: 12px; }
   .epn { font-size: 14px; min-height: 20px; }
   .roll .msg { margin-top: 2px; font-size: 12px; line-height: 1.5; }
@@ -199,9 +201,9 @@ input:disabled { opacity: .5; }
   .panel-sec h2 { font-size: 12px; margin-bottom: 6px; }
   .sec-head { margin-bottom: 8px; }
   #pass { padding: 8px 16px; font-size: inherit; }
-  .chip { min-width: 34px; padding: 4px 8px; font-size: 13px; }
+  .chip { flex: none; min-width: 34px; padding: 4px 8px; font-size: 13px; }
   .hd { display: block; }
-  .chips { flex-wrap: wrap; overflow: visible; justify-content: center; }
+  .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
   .songs { grid-template-columns: 1fr 1fr; max-height: 30vh; }
   .song { font-size: 15px; padding: 9px 12px; }
 }
