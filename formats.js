@@ -15,9 +15,9 @@
    例）"4/3/4EN2" → 4曲 / MC / 3曲 / MC / 4曲 → アンコール2曲（全13曲）
    ========================================================= */
 const FORMATS = [
-  { id: "normal",  name: "通常",         spec: "4/3/4EN2",          divider: "MC" },
-  { id: "regular", name: "定期公演",     spec: "4/1S/6EN2",         divider: "MC" },
-  { id: "release", name: "リリイベ",     spec: "3",                 divider: "MC" },
-  { id: "outside", name: "外部イベント", spec: "5",                 divider: "MC" },
-  { id: "anira",   name: "アニラ2026",   spec: "4/6MC2/3/2/4/EN2",  divider: "幕間映像" }
+  { id: "normal",  name: "通常",         spec: "4/3/4//EN2",          divider: "MC", divider2: "アンコール" },
+  { id: "regular", name: "定期公演",     spec: "4/1S/6//EN2",         divider: "MC", divider2: "アンコール" },
+  { id: "release", name: "リリイベ",     spec: "3",                 divider: "MC", divider2: "アンコール" },
+  { id: "outside", name: "外部イベント", spec: "5",                 divider: "MC", divider2: "アンコール" },
+  { id: "anira",   name: "アニラ2026",   spec: "4/6MC2/3/2/4/EN2",  divider: "幕間映像", divider2: "アンコール" }
 ];

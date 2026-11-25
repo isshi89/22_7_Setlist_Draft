@@ -28,11 +28,38 @@ let LAYOUT = [];
 let SLOT_IDS = [];
 
 // formats.js の spec 文字列を、枠の配列に変換する
-function buildLayout(spec, divider) {
+// function buildLayout(spec, divider,divider2) {
+//   const out = [];
+//   let n = 0, en = 0;                              // 曲番号・アンコール番号のカウンタ
+//   spec.split("/","//").forEach((seg, i) => {
+//     if (i > 0) out.push(["d", divider, divider2]);          // "/" は区切り
+//     (seg.match(/\d+S?|MC|EN\d+/g) || []).forEach(tok => {
+//       if (tok === "MC") out.push(["d", "MC"]);                                    // 区切りの中のMC
+//       else if (tok.startsWith("EN")) for (let j = 0; j < +tok.slice(2); j++) out.push(["s", "EN" + (++en)]);
+//       else if (tok.endsWith("S")) out.push(["s", String(++n), true]);             // ソロ枠
+//       else for (let j = 0; j < parseInt(tok, 10); j++) out.push(["s", String(++n)]); // 通常の曲枠
+//     });
+//   });
+//   return out;
+// }
+
+// const currentFormat = () => FORMATS.find(f => f.id === S.format) || FORMATS[0];
+
+// // 選択中のフォーマットを LAYOUT / SLOT_IDS に反映する
+// function applyFormat() {
+//   const f = currentFormat();
+//   S.format = f.id;
+//   LAYOUT = buildLayout(f.spec, f.divider);
+//   SLOT_IDS = LAYOUT.filter(x => x[0] === "s").map(x => x[1]);
+// }
+
+// formats.js の spec 文字列を、枠の配列に変換する
+function buildLayout(spec, divider, divider2) {
   const out = [];
   let n = 0, en = 0;                              // 曲番号・アンコール番号のカウンタ
-  spec.split("/").forEach((seg, i) => {
-    if (i > 0) out.push(["d", divider]);          // "/" は区切り
+  spec.split(/(\/\/|\/)/).forEach(seg => {
+    if (seg === "//") { out.push(["d", divider2]); return; } // "//" は区切り2
+    if (seg === "/")  { out.push(["d", divider]);  return; } // "/" は区切り1
     (seg.match(/\d+S?|MC|EN\d+/g) || []).forEach(tok => {
       if (tok === "MC") out.push(["d", "MC"]);                                    // 区切りの中のMC
       else if (tok.startsWith("EN")) for (let j = 0; j < +tok.slice(2); j++) out.push(["s", "EN" + (++en)]);
@@ -49,9 +76,14 @@ const currentFormat = () => FORMATS.find(f => f.id === S.format) || FORMATS[0];
 function applyFormat() {
   const f = currentFormat();
   S.format = f.id;
-  LAYOUT = buildLayout(f.spec, f.divider);
+  LAYOUT = buildLayout(f.spec, f.divider, f.divider2);
   SLOT_IDS = LAYOUT.filter(x => x[0] === "s").map(x => x[1]);
 }
+
+
+
+
+
 
 const STORAGE_KEY = "s227v4";                 // 進行状況の保存キー（ブラウザのlocalStorage）
 const SITE_TITLE = "22/7セトリドラフト";     // 画像のタイトルのベース
