@@ -288,3 +288,35 @@ input:disabled { opacity: .5; }
   background: var(--g2); color: var(--bg); font-size: 12px;
   padding: 6px 12px; border-radius: 999px; z-index: 30;
 }
+
+/* ---------- 9. デバッグモード ---------- */
+/* タイトルの連続タップで文字が選択されないように */
+#title { user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; cursor: default; }
+
+/* 左下の表示（終了ボタンつき） */
+.dbg-bar {
+  position: fixed; left: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 30;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--ink); color: var(--bg); font-size: 12px; font-weight: 700;
+  padding: 6px 8px 6px 14px; border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(0,0,0,.25);
+}
+.dbg-bar button { padding: 3px 10px; font-size: 12px; }
+.dbg-bar[hidden], .modal[hidden] { display: none; }
+
+/* パスワード入力画面 */
+.modal {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+  background: rgba(15,24,32,.5);
+}
+.modal-box { width: 100%; max-width: 320px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px; }
+.modal-box input[type=password] {
+  width: 100%; border: 1px solid var(--line); border-radius: 10px;
+  padding: 10px; background: var(--bg); color: var(--ink); font: inherit;
+}
+
+/* デバッグ中の操作（EP選択・×ボタン・差し替え） */
+#dbgEp { max-width: 62%; padding: 4px 6px; font: inherit; font-size: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); }
+.slot-x { flex: none; width: 26px; height: 26px; padding: 0; margin-left: 6px; border-radius: 50%; line-height: 1; }
+.slot.fill.ow { cursor: pointer; }

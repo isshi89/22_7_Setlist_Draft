@@ -90,6 +90,10 @@ const SITE_TITLE = "22/7セトリドラフト";     // 画像のタイトルの�
 const SPIN_FRAMES = 22;                     // ルーレットの切り替え回数
 const SPIN_INTERVAL = 70;                   // 切り替え間隔（ミリ秒）。大きいほどゆっくり
 const RESET_CONFIRM_MS = 3000;              // リセット確認の受付時間（ミリ秒）
+const DEBUG_TAPS = 11;                      // デバッグモードに入るためのタイトルのタップ回数
+const DEBUG_TAP_GAP_MS = 2000;              // この時間あくと、タップ回数がリセットされる（ミリ秒）
+const DEBUG_PASSWORD = "20170920";          // デバッグモードのパスワード（※ソースを見れば分かるので、本当の秘密は守れません）
+let DEBUG = false;                          // デバッグモード中は true（無制限でセットリストを作れる）
 
 // 曲データ（data.js）を「1曲=1行」の配列に変換：{ k:EP番号, ep:EPタイトル, tr:トラック番号, t:曲名 }
 const ROWS = EPS.flatMap(([k, ep, songs]) =>
@@ -150,7 +154,7 @@ function title() {
 const placedTitles = () => Object.values(S.slots).map(s => s.t);
 
 // 残り回数（limit が -1 のときは無制限＝Infinity）
-const optLeft = (limit, used) => (limit < 0 ? Infinity : limit - used);
+const optLeft = (limit, used) => (DEBUG || limit < 0 ? Infinity : limit - used);   // デバッグ中は常に無制限
 
 // 次に出る可能性のある目の一覧
 //   まだ出ていない目は常に対象。すでに出た目は、EP重複の残り回数があるあいだだけ対象
@@ -160,7 +164,7 @@ function spinPool() {
 }
 
 // そのEPに、まだ配置できる曲が残っているか
-const hasAvailable = k => ROWS.some(r => r.k === k && !placedTitles().includes(r.t));
+const hasAvailable = k => ROWS.some(r => r.k === k && (DEBUG || !placedTitles().includes(r.t)));   // デバッグ中は同じ曲もOK
 
 /* ---------------------------------------------------------
    4. 描画
@@ -174,7 +178,7 @@ function render() {
   $("tprev").textContent = "出力タイトル：" + title();
 
   // フォーマット選択（ドラフトが始まったら固定。変えるにはリセット）
-  const started = S.drawn.length > 0 || Object.keys(S.slots).length > 0;
+  const started = !DEBUG && (S.drawn.length > 0 || Object.keys(S.slots).length > 0);   // デバッグ中はいつでも変更できる
   $("fmts").innerHTML = FORMATS.map(f =>
     `<button class="fmt ${f.id === S.format ? "on" : ""}" data-f="${f.id}" ${started ? "disabled" : ""}>${esc(f.name)}</button>`
   ).join("");
@@ -190,8 +194,9 @@ function render() {
   });
   const passLeft = optLeft(S.opt.pass, S.passUsed);
   const dupLeft = optLeft(S.opt.dup, S.dupUsed) > 0;   // true の間は、出た目も横線を引かない
-  const leftText = (limit, used) => (limit < 0 ? "無制限" : `残り${limit - used}／${limit}回`);
+  const leftText = (limit, used) => (DEBUG || limit < 0 ? "無制限" : `残り${limit - used}／${limit}回`);
   $("odesc").textContent = `パス：${leftText(S.opt.pass, S.passUsed)}　EP重複：${leftText(S.opt.dup, S.dupUsed)}`;
+  $("counts").textContent = `パス ${leftText(S.opt.pass, S.passUsed)}　EP重複 ${leftText(S.opt.dup, S.dupUsed)}`;   // ルーレット内の表示
   $("pass").textContent = `パス（${passLeft === Infinity ? "無制限" : "残り" + passLeft + "回"}）`;
   $("pass").disabled = passLeft <= 0;
 
@@ -203,7 +208,7 @@ function render() {
   // ルーレット表示と「回す」ボタン（配置待ち・完成・全部出た後は押せない）
   $("num").textContent = S.cur ? keyLabel(S.cur) : "?";
   $("epn").textContent = curRows[0] ? curRows[0].ep : "";
-  $("spin").disabled = S.pending || full || spinPool().length === 0;
+  $("spin").disabled = (!DEBUG && (S.pending || full)) || spinPool().length === 0;   // デバッグ中は配置待ち・完成後も回せる
 
   // ガイドメッセージ
   $("msg").textContent = full ? "セットリスト完成！"
@@ -214,7 +219,7 @@ function render() {
   // 曲の選択（配置待ちのときだけ表示）
   $("songCard").hidden = !S.pending;
   if (S.pending) {
-    const used = placedTitles();
+    const used = DEBUG ? [] : placedTitles();   // デバッグ中は配置済みの曲も選べる
     $("songs").innerHTML = curRows.map(r =>
       `<button class="song ${S.sel === r.t ? "sel" : ""}" data-t="${esc(r.t)}" ${used.includes(r.t) ? "disabled" : ""}>` +
       `<b>${r.tr}</b>${esc(r.t)}</button>`
@@ -233,12 +238,19 @@ function render() {
         MEMBERS.map(m => `<option value="${esc(m)}" ${m === S.solo ? "selected" : ""}>${esc(m)}</option>`).join("") +
         `</select><button type="button" class="step" data-d="1" aria-label="次のメンバー">›</button></span>` : "";
     if (s) {
-      return `<div class="slot fill"><span class="no">${lab}</span>${solo}<span class="st">${esc(s.t)}</span><small>${esc(s.ep)}</small></div>`;
+      // デバッグ中だけ：「×」で外せる／曲を選んでからタップすると差し替えられる
+      const dbg = DEBUG ? `<button type="button" class="slot-x" data-x="${id}" aria-label="外す">×</button>` : "";
+      return `<div class="slot fill ${DEBUG && S.sel ? "ow" : ""}" ${DEBUG ? `data-i="${id}"` : ""}>` +
+             `<span class="no">${lab}</span>${solo}<span class="st">${esc(s.t)}</span><small>${esc(s.ep)}</small>${dbg}</div>`;
     }
     const hot = S.pending && S.sel;   // 曲を選択中なら空き枠を強調して押せるようにする
     return `<div class="slot ${hot ? "hot" : ""}" data-i="${id}">` +
            `<span class="no">${lab}</span>${solo}<span class="st" style="color:var(--mute)">—</span></div>`;
   }).join("");
+
+  // デバッグモードの表示
+  $("dbgBar").hidden = !DEBUG;
+  $("dbgPick").hidden = !DEBUG;
 
   save();
 }
@@ -307,6 +319,9 @@ $("list").onclick = e => {
     S.solo = sel.value; save();
     return;
   }
+  // デバッグ中：「×」で配置済みの曲を外す
+  const xBtn = e.target.closest(".slot-x");
+  if (xBtn) { delete S.slots[xBtn.dataset.x]; render(); return; }
   if (e.target.closest("input, select")) return;   // ソロのメンバー選択は配置の操作に含めない
   const b = e.target.closest(".slot");
   if (!b || !b.dataset.i || !S.sel || !S.pending) return;
@@ -354,6 +369,7 @@ $("fmts").onclick = e => {
   if (!b || b.disabled) return;
   S.format = b.dataset.f;
   applyFormat();
+  Object.keys(S.slots).forEach(id => { if (!SLOT_IDS.includes(id)) delete S.slots[id]; });   // 新しい形式にない枠は外す（デバッグ中の変更用）
   render();
 };
 
@@ -517,8 +533,64 @@ $("post").onclick = async () => {
 };
 
 /* ---------------------------------------------------------
+   6-3. デバッグモード（無制限でセットリストを作れる）
+     入り方：ヘッダーの「22/7 セトリドラフト」を11回タップ → パスワード入力
+     中身  ：パス・EP重複が無制限／同じ曲も置ける／配置済みの曲を「×」で外せる・差し替えできる
+             ルーレットを何度でも回せる／EPを直接選べる／フォーマットをいつでも変更できる
+   --------------------------------------------------------- */
+function setDebug(on) {
+  DEBUG = on;
+  try { on ? sessionStorage.setItem("s227dbg", "1") : sessionStorage.removeItem("s227dbg"); } catch (e) {}
+  render();
+}
+
+// タイトルを連続タップ（間があくとリセット）
+let tapCount = 0, tapTimer = null;
+$("title").onclick = () => {
+  tapCount++;
+  clearTimeout(tapTimer);
+  tapTimer = setTimeout(() => { tapCount = 0; }, DEBUG_TAP_GAP_MS);
+  if (tapCount >= DEBUG_TAPS) {
+    tapCount = 0;
+    if (!DEBUG) openPassword();
+  }
+};
+
+// パスワード入力画面
+function openPassword() {
+  $("pwInput").value = ""; $("pwMsg").textContent = "";
+  $("pwModal").hidden = false;
+  $("pwInput").focus();
+}
+function closePassword() { $("pwModal").hidden = true; }
+function submitPassword() {
+  if ($("pwInput").value === DEBUG_PASSWORD) { closePassword(); setDebug(true); }
+  else { $("pwMsg").textContent = "パスワードが違います"; $("pwInput").value = ""; $("pwInput").focus(); }
+}
+$("pwOk").onclick = submitPassword;
+$("pwCancel").onclick = closePassword;
+$("pwInput").onkeydown = e => {
+  if (e.key === "Enter") submitPassword();
+  if (e.key === "Escape") closePassword();
+};
+
+// デバッグ終了
+$("dbgExit").onclick = () => setDebug(false);
+
+// EPを直接選ぶ（ルーレットを使わず、そのEPの曲を選べる状態にする）
+$("dbgEp").innerHTML = `<option value="">EPを選ぶ</option>` +
+  EPS.map(e => `<option value="${esc(e[0])}">${keyLabel(e[0])}　${esc(e[1] || "")}</option>`).join("");
+$("dbgEp").onchange = e => {
+  if (!DEBUG || !e.target.value) return;
+  S.cur = e.target.value; S.pending = true; S.skipped = false; S.sel = null;
+  e.target.value = "";
+  render();
+};
+
+/* ---------------------------------------------------------
    7. 起動
    --------------------------------------------------------- */
+try { DEBUG = sessionStorage.getItem("s227dbg") === "1"; } catch (e) {}   // デバッグ中のまま再読み込みしたときの復元
 restore();       // 前回の続きを復元
 applyFormat();   // 選択中のフォーマットから枠を作る
 render();    // 画面を描画
